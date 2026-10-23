@@ -1,6 +1,0 @@
-description = "Sotto: a silent copilot for the Google Meet call you're in"
-prompt = """
-Activate the `sotto` skill and follow it for this meeting.
-
-Brief from the user: {{args}}
-"""

@@ -1,11 +1,9 @@
 {
-  "name": "sotto",
-  "version": "0.1.0",
   "mcpServers": {
     "meet": {
       "command": "uv",
       "args": ["run", "--quiet", "--no-project", "server.py"],
-      "cwd": "${extensionPath}/mcp-server"
+      "cwd": "./mcp-server"
     }
   }
 }

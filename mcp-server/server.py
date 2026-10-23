@@ -2,7 +2,7 @@
 
 One stdlib-only process with two faces:
 
-* an MCP server on stdin/stdout for an AI agent such as Claude Code, Gemini CLI or Codex, and
+* an MCP server on stdin/stdout for an AI agent such as Claude Code, Codex or Antigravity, and
 * a loopback HTTP endpoint the Sotto Chrome extension posts the Meet
   tab's captions, status and shared-screen frames to.
 

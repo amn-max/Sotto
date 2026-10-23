@@ -16,7 +16,7 @@ jobs:
       - name: Check every manifest carries the tag's version
         run: |
           version="${GITHUB_REF_NAME#v}"
-          for file in chrome-extension/manifest.json .claude-plugin/plugin.json .codex-plugin/plugin.json gemini-extension.json; do
+          for file in chrome-extension/manifest.json .claude-plugin/plugin.json .codex-plugin/plugin.json .antigravity-plugin/plugin.json; do
             found=$(python3 -c "import json,sys; print(json.load(open(sys.argv[1]))['version'])" "$file")
             if [ "$found" != "$version" ]; then
               echo "::error file=$file::version is $found, tag is $version"
@@ -29,10 +29,16 @@ jobs:
           python3 -m unittest discover -s tests
           node --test tests/content.test.mjs
 
-      - name: Build the Chrome extension
+      - name: Build the browser extension
         run: cd chrome-extension && zip -r ../sotto-chrome-extension.zip .
+
+      - name: Build the Antigravity plugin
+        run: |
+          mkdir -p build/sotto
+          cp -r .antigravity-plugin mcp_config.json skills mcp-server assets build/sotto/
+          cd build && zip -r ../sotto-antigravity-plugin.zip sotto
 
       - name: Publish the release
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release create "$GITHUB_REF_NAME" sotto-chrome-extension.zip --title "Sotto $GITHUB_REF_NAME" --generate-notes
+        run: gh release create "$GITHUB_REF_NAME" sotto-chrome-extension.zip sotto-antigravity-plugin.zip --title "Sotto $GITHUB_REF_NAME" --generate-notes

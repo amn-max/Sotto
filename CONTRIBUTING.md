@@ -10,7 +10,7 @@ flowchart LR
   end
   extension["Browser extension"]
   server["MCP server<br/>127.0.0.1:47823"]
-  agent["Agent<br/>Claude Code · Codex · Gemini CLI"]
+  agent["Agent<br/>Claude Code · Codex · Antigravity"]
   captions --> extension
   screen --> extension
   extension -- "captions · status · snapshots" --> server
@@ -27,16 +27,17 @@ flowchart LR
 chrome-extension/      browser extension (Manifest V3)
 mcp-server/server.py   MCP server and loopback endpoint
 skills/sotto/          the skill every agent follows
+assets/                icon
 tests/                 server end-to-end tests and extension logic tests
 .github/workflows/     release build
 
 .claude-plugin/        Claude Code plugin, plus the marketplace Claude Code and Codex install from
 .codex-plugin/         Codex plugin
-gemini-extension.json  Gemini CLI extension
-commands/sotto.toml    the /sotto command for Gemini CLI
+.antigravity-plugin/   Antigravity plugin
+mcp_config.json        Antigravity plugin's server
 ```
 
-The agent packaging sits at the top level because each agent requires it there. Gemini CLI reads its manifest, `skills/` and `commands/` only from the folder it installs, and Claude Code and Codex refuse server paths outside the plugin folder.
+The agent packaging sits at the top level because each agent requires it there. Antigravity reads `mcp_config.json` and `skills/` from the top of the plugin folder, and Claude Code and Codex refuse server paths outside the plugin folder. Antigravity starts the server from the plugin folder, so `mcp_config.json` refers to `./mcp-server`.
 
 ## Tools
 
@@ -65,7 +66,7 @@ Clone the repository, then point your browser and agent at the clone instead of 
 |---|---|
 | Browser | **Load unpacked** on `chrome-extension/` |
 | Claude Code | `claude plugin marketplace add ./sotto` then `claude plugin install sotto@sotto` (read in place) |
-| Gemini CLI | `gemini extensions link ./sotto` (read in place) |
+| Antigravity | Copy the clone into `~/.gemini/config/plugins/sotto` (app or IDE), or `agy plugin install ./sotto` (CLI) |
 | Codex CLI | `codex plugin marketplace add ./sotto` then `codex plugin add sotto@sotto` (copied, so reinstall after changes) |
 
 After changing the extension, reload it in `chrome://extensions` and refresh the Meet tab. After changing the server or the skill, start a new agent session.
@@ -76,12 +77,11 @@ After changing the extension, reload it in `chrome://extensions` and refresh the
 python -m unittest discover -s tests     # server, driven over MCP stdio and HTTP
 node --test tests/content.test.mjs       # extension caption handling
 claude plugin validate .                 # Claude Code plugin
-gemini extensions validate .             # Gemini CLI extension
 ```
 
 ## Releasing
 
-1. Set the new version in all four manifests: `chrome-extension/manifest.json`, `.claude-plugin/plugin.json`, `.codex-plugin/plugin.json` and `gemini-extension.json`.
+1. Set the new version in `chrome-extension/manifest.json`, `.claude-plugin/plugin.json`, `.codex-plugin/plugin.json` and `.antigravity-plugin/plugin.json`.
 2. Commit, then tag and push: `git tag v0.2.0 && git push origin main v0.2.0`.
 
-The release workflow checks that every manifest carries the tag's version, runs the tests, zips `chrome-extension/` as `sotto-chrome-extension.zip`, and publishes a GitHub release with it. The README's download link always points at the newest release's zip.
+The release workflow checks that those manifests carry the tag's version and runs the tests. It then builds `sotto-chrome-extension.zip` (the browser extension) and `sotto-antigravity-plugin.zip` (the plugin in a `sotto/` folder, for unzipping into Antigravity's plugins folder) and publishes both in a GitHub release. The README links to `releases/latest/download/<file>`, which always serves the newest release.

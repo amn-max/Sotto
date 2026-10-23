@@ -1,3 +1,5 @@
+<p align="center"><img src="assets/icon.png" width="120" alt="Sotto"></p>
+
 # Sotto
 
 > *sotto voce* — in a quiet voice, so only the person beside you hears.
@@ -6,12 +8,9 @@
 
 ![Claude Code](https://img.shields.io/badge/Claude%20Code-plugin-D97757)
 ![Codex](https://img.shields.io/badge/Codex-plugin-10A37F)
-![Gemini CLI](https://img.shields.io/badge/Gemini%20CLI-extension-4285F4)
-![Cost](https://img.shields.io/badge/extra%20cost-none-2E7D32)
+![Antigravity](https://img.shields.io/badge/Antigravity-plugin-4285F4)
 
 Sotto follows your meeting as it happens: what people say, and whatever they put on screen. While the conversation is still going, your agent sends you short private cues: the question worth asking now, the objection that's coming, the fact from your own work that settles the point.
-
-Nothing joins the call, and nothing is said or posted into it. The only cost is your agent's subscription.
 
 ---
 
@@ -34,33 +33,28 @@ Cues appear in your agent's chat while people talk:
   Answer: 99.5% monthly uptime, with credits starting below 99%. It's in the vendor-eval doc.
 ```
 
-Sotto stays quiet unless a cue would change what you say or do in the next minute. It doesn't narrate the meeting back to you.
+Sotto speaks up only when it has something useful, and stays quiet the rest of the time.
 
 ## Why Sotto
 
-- **It knows your work.** Sotto runs inside your AI agent, so mid-meeting it can look through the projects, documents and notes your agent can see. Typical meeting assistants only know the meeting.
-- **Nothing joins the call.** There's no bot in the participant list and nothing in the chat.
+- **It knows your work.** Sotto runs inside your AI agent, so mid-meeting it can look through the projects, documents and notes your agent can see.
+- **Nothing joins the call.** There's no bot in the participant list, and nothing is said or posted in the meeting.
 - **It sees the screen.** When someone presents, your agent can read the slide, dashboard or document they're showing.
 - **Free and light.** It uses Google Meet's own captions, so there's no transcription service, no API key and no account to create. It barely uses your computer.
 - **Any caption language.** It works in every language Google Meet can caption.
 
-## Works with
+## What you need
 
-| Agent | Start Sotto with | |
-|---|---|---|
-| **Claude Code** | `/sotto` | Tested in live meetings |
-| **Codex CLI** | `$sotto` | Supported |
-| **Gemini CLI** | `/sotto` | Supported |
-
-You need **Google Chrome** or **Microsoft Edge** for the meeting, with Google Meet's interface in English.
+- One of these AI agents: **Claude Code**, **Codex CLI** or **Antigravity**
+- **Google Chrome** or **Microsoft Edge**, with Google Meet's interface in English
 
 ## Install
 
-Setup takes about five minutes, and you only do it once.
+You only do this once.
 
 ### 1. Install uv
 
-Sotto's background helper runs through [uv](https://docs.astral.sh/uv/), a small free tool that also sets up Python if you don't have it.
+Sotto needs [uv](https://docs.astral.sh/uv/), a small free tool that runs its background helper. Skip this step if you already have it.
 
 **Windows** (PowerShell):
 
@@ -76,11 +70,11 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 
 ### 2. Add the browser extension
 
-1. **[Download the Sotto extension](https://github.com/amn-max/Sotto/releases/latest/download/sotto-chrome-extension.zip)** (always the newest version).
+1. **[Download the Sotto extension](https://github.com/amn-max/Sotto/releases/latest/download/sotto-chrome-extension.zip)**.
 2. Unzip it into a folder you'll keep, such as `Documents\Sotto extension`. The browser loads Sotto from that folder, so don't delete it.
 3. Open `chrome://extensions` (or `edge://extensions`), switch on **Developer mode**, click **Load unpacked**, and choose the folder you unzipped.
 
-Do this in the browser profile you join meetings from. Sotto isn't in the Chrome Web Store yet, which is why it installs through developer mode.
+Do this in the browser profile you join meetings from.
 
 ### 3. Add Sotto to your agent
 
@@ -107,15 +101,21 @@ codex plugin add sotto@sotto
 </details>
 
 <details>
-<summary><b>Gemini CLI</b></summary>
+<summary><b>Antigravity</b></summary>
+
+**App or IDE:**
+
+1. **[Download the Sotto plugin](https://github.com/amn-max/Sotto/releases/latest/download/sotto-antigravity-plugin.zip)**.
+2. Unzip it into your Antigravity plugins folder: `~/.gemini/config/plugins` (on Windows, `%USERPROFILE%\.gemini\config\plugins`).
+3. Restart Antigravity.
+
+**CLI:**
 
 ```bash
-gemini extensions install https://github.com/amn-max/Sotto
+agy plugin install https://github.com/amn-max/Sotto
 ```
 
-The first time Gemini asks to run a Sotto tool, choose to always allow it, so it can keep listening without stopping to ask.
-
-With a personal Google account, Gemini CLI signs in with a Gemini API key, which is free from [Google AI Studio](https://aistudio.google.com/apikey).
+The first time Antigravity asks to run a Sotto tool, choose to always allow it, so it can keep listening without stopping to ask.
 </details>
 
 Then start a new session in your agent.
@@ -123,13 +123,11 @@ Then start a new session in your agent.
 ## Use it
 
 1. **Join your meeting** in the browser and turn on captions: press `c`, or click the **CC** button. Only you see them.
-2. **Start Sotto** in your agent, and say what the meeting is about and what you want from it:
+2. **Start Sotto** with `/sotto` (`$sotto` in Codex; in the Antigravity IDE, ask the agent to start Sotto), and say what the meeting is about and what you want from it:
 
    ```
    /sotto Vendor call on telephony pricing. I want under 40 paise a minute and a 30-day pilot.
    ```
-
-   In Codex, type `$sotto` instead of `/sotto`.
 
    The description is optional; with just `/sotto`, it works out the context as the meeting goes. The more you tell it (your goal, who's on the other side, what to watch for), the sharper the cues.
 
@@ -153,10 +151,10 @@ Your agent writes its cues in the language you write to it in, whatever language
 
 ## Updating
 
-- **Browser extension:** [download the newest zip](https://github.com/amn-max/Sotto/releases/latest/download/sotto-chrome-extension.zip), unzip it over your existing Sotto folder, then click the reload button on Sotto's card in `chrome://extensions`.
+- **Browser extension:** [download the zip](https://github.com/amn-max/Sotto/releases/latest/download/sotto-chrome-extension.zip) again, unzip it over your existing Sotto folder, then click the reload button on Sotto's card in `chrome://extensions`.
 - **Claude Code:** `claude plugin marketplace update sotto`, then `claude plugin update sotto@sotto`.
 - **Codex CLI:** `codex plugin marketplace upgrade`, then `codex plugin add sotto@sotto`.
-- **Gemini CLI:** `gemini extensions update sotto`.
+- **Antigravity:** download and unzip the plugin again over the old one (or rerun `agy plugin install` in the CLI), then restart Antigravity.
 
 ## Troubleshooting
 
@@ -166,20 +164,19 @@ Your agent writes its cues in the language you write to it in, whatever language
 | "Captions are OFF" | Press `c` in the meeting, or click the **CC** button. |
 | Cues don't match what's being said | Check the caption language (see [Languages](#languages)). |
 | `/sotto` isn't recognised | Start a new session in your agent after installing. |
-| "Port 47823 is held by another program" | Another app is using Sotto's port. Close it, or see [CONTRIBUTING.md](CONTRIBUTING.md#settings) to change the port. |
+| "Port 47823 is held by another program" | Another app is using the port Sotto needs. Close that app, then start Sotto again. |
 
 ## Privacy
 
 - **Stays on your computer:** the meeting transcript and screen snapshots, saved in a `Sotto` folder in your home folder. Delete them whenever you like.
 - **Goes to your agent's provider:** the caption text, and any snapshots your agent looks at, go to the company behind your agent (Anthropic, OpenAI or Google) as part of your normal session with them.
-- **Goes nowhere else:** there's no Sotto server, no account and no tracking, and nothing is ever posted to the meeting.
+- **Goes nowhere else:** there's no Sotto server, no account and no tracking.
 - **Other people in the meeting** aren't notified. Whether and how to tell them is up to you. Follow your organisation's rules, especially for calls with customers.
 
 ## Limits
 
 - **Captions aren't perfect.** Names, numbers, and speech in a language other than the caption language can come through garbled. Your agent reads past a lot of it from context, but it can't hear the audio.
 - **Screen sharing** works when someone else presents; your own shared screen isn't captured.
-- **Google Meet only,** in Chrome or Edge, with Meet's interface in English.
 
 ---
 

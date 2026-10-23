@@ -20,6 +20,8 @@
     "developerName": "Ayush Naik",
     "category": "Productivity",
     "capabilities": ["Interactive"],
+    "composerIcon": "./assets/icon.png",
+    "logo": "./assets/icon.png",
     "defaultPrompt": [
       "Listen to my Google Meet and give me cues",
       "Help me in this vendor call: push for a pilot"
