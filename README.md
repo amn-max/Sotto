@@ -151,8 +151,10 @@ Your agent writes its cues in the language you write to it in, whatever language
 
 ## Updating
 
+When a new version is out, Sotto tells you in your agent the next time you start it, with a link. To update:
+
 - **Browser extension:** [download the zip](https://github.com/amn-max/Sotto/releases/latest/download/sotto-chrome-extension.zip) again, unzip it over your existing Sotto folder, then click the reload button on Sotto's card in `chrome://extensions`.
-- **Claude Code:** `claude plugin marketplace update sotto`, then `claude plugin update sotto@sotto`.
+- **Claude Code:** `claude plugin marketplace update sotto`, then `claude plugin update sotto@sotto`. To have Claude Code update Sotto by itself, open `/plugin`, go to **Marketplaces**, choose **sotto** and turn on **Enable auto-update**.
 - **Codex CLI:** `codex plugin marketplace upgrade`, then `codex plugin add sotto@sotto`.
 - **Antigravity:** download and unzip the plugin again over the old one (or rerun `agy plugin install` in the CLI), then restart Antigravity.
 
@@ -170,6 +172,7 @@ Your agent writes its cues in the language you write to it in, whatever language
 
 - **Stays on your computer:** the meeting transcript and screen snapshots, saved in a `Sotto` folder in your home folder. Delete them whenever you like.
 - **Goes to your agent's provider:** the caption text, and any snapshots your agent looks at, go to the company behind your agent (Anthropic, OpenAI or Google) as part of your normal session with them.
+- **Version check:** once a day, when you start Sotto, it asks GitHub for the latest version number. Nothing about you or your meetings is sent. To turn it off, set the environment variable `SOTTO_UPDATE_CHECK=0`.
 - **Goes nowhere else:** there's no Sotto server, no account and no tracking.
 - **Other people in the meeting** aren't notified. Whether and how to tell them is up to you. Follow your organisation's rules, especially for calls with customers.
 

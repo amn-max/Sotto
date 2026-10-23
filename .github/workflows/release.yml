@@ -23,6 +23,11 @@ jobs:
               exit 1
             fi
           done
+          server=$(grep -oP '^VERSION = "\K[^"]+' mcp-server/server.py)
+          if [ "$server" != "$version" ]; then
+            echo "::error file=mcp-server/server.py::VERSION is $server, tag is $version"
+            exit 1
+          fi
 
       - name: Run tests
         run: |

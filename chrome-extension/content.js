@@ -170,7 +170,12 @@ async function report() {
   ticks += 1;
   if (!serverUp && (ticks - 1) % REPORT_EVERY_WHEN_DOWN !== 0) return;
   const who = presenter();
-  const reply = await send('report', { captions: captionsState(), inCall: inCall(), presenter: who });
+  const reply = await send('report', {
+    captions: captionsState(),
+    inCall: inCall(),
+    presenter: who,
+    version: chrome.runtime.getManifest().version,
+  });
   const wasUp = serverUp;
   serverUp = !!reply.ok;
   if (serverUp && !wasUp) {

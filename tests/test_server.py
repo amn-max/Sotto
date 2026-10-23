@@ -2,6 +2,7 @@
 posted to the way the Chrome extension posts to it."""
 
 import base64
+import http.server
 import json
 import os
 import socket
@@ -29,8 +30,8 @@ def free_port():
 class Session:
     """One server process, as one agent session sees it."""
 
-    def __init__(self, port, save_dir, log_path):
-        env = dict(os.environ, SOTTO_PORT=str(port), SOTTO_DIR=str(save_dir))
+    def __init__(self, port, save_dir, log_path, overrides=None):
+        env = {**os.environ, "SOTTO_PORT": str(port), "SOTTO_DIR": str(save_dir), "SOTTO_UPDATE_CHECK": "0", **(overrides or {})}
         self.log = open(log_path, "ab")
         self.proc = subprocess.Popen(
             [sys.executable, str(SERVER)], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=self.log, env=env
@@ -115,6 +116,19 @@ def frame(port, reason="changed"):
     return post(port, "/ext/frame", {**TAB, "reason": reason, "w": 1568, "h": 882, "jpeg": base64.b64encode(JPEG).decode()})
 
 
+class NewerRelease(http.server.BaseHTTPRequestHandler):
+    def do_GET(self):
+        body = json.dumps({"tag_name": "v9.9.9"}).encode()
+        self.send_response(200)
+        self.send_header("Content-Type", "application/json")
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
+
+    def log_message(self, *_args):
+        pass
+
+
 class ServerTest(unittest.TestCase):
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory()
@@ -128,8 +142,8 @@ class ServerTest(unittest.TestCase):
             session.close()
         self.tmp.cleanup()
 
-    def session(self):
-        session = Session(self.port, Path(self.tmp.name) / "saved", Path(self.tmp.name) / "server.log")
+    def session(self, **overrides):
+        session = Session(self.port, Path(self.tmp.name) / "saved", Path(self.tmp.name) / "server.log", overrides)
         self.sessions.append(session)
         return session
 
@@ -247,6 +261,22 @@ class ServerTest(unittest.TestCase):
             report(self.port)
         self.assertIn("Sotto is listening", copilot.text("start"))
         self.assertEqual(report(self.port)[0], 200)
+
+    def test_tells_the_agent_when_a_newer_release_is_out(self):
+        github = http.server.HTTPServer(("127.0.0.1", 0), NewerRelease)
+        threading.Thread(target=github.serve_forever, daemon=True).start()
+        self.addCleanup(github.server_close)
+        self.addCleanup(github.shutdown)
+        copilot = self.session(SOTTO_UPDATE_CHECK="1", SOTTO_UPDATE_URL=f"http://127.0.0.1:{github.server_address[1]}/latest")
+        copilot.text("start")
+        report(self.port, version="0.0.1")
+        heard, deadline = "", time.time() + 10
+        while time.time() < deadline and not ("Sotto v9.9.9" in heard and "is v0.0.1; v9.9.9 is out" in heard):
+            heard += copilot.text("wait_for_update", timeout_s=5)
+        self.assertIn("Update available: Sotto v9.9.9 (installed: v", heard)
+        self.assertIn("The Sotto browser extension is v0.0.1; v9.9.9 is out", heard)
+        self.assertEqual(heard.count("Update available"), 1)
+        self.assertIn("Update available", copilot.text("start"))
 
 
 if __name__ == "__main__":

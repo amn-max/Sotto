@@ -57,6 +57,10 @@ The three reading tools are annotated read-only, and the Codex plugin pre-approv
 |---|---|---|
 | `SOTTO_PORT` | `47823` | Local port. Change it in `chrome-extension/manifest.json` and `chrome-extension/background.js` too. |
 | `SOTTO_DIR` | `~/Sotto` | Where meetings are saved. |
+| `SOTTO_UPDATE_CHECK` | `1` | `0` turns off the daily check for a newer release. |
+| `SOTTO_UPDATE_URL` | GitHub's latest-release API | Where the check looks; the tests point it at a local stand-in. |
+
+On `start`, the server asks `SOTTO_UPDATE_URL` for the latest release at most once a day, caching the answer in `SOTTO_DIR/update-check.json`. The extension reports its own version with every check-in. When either the plugin or the extension is older than the latest release, the agent hears it once, in `start`'s status or as a `[status]` line.
 
 ## Working on it
 
@@ -81,7 +85,7 @@ claude plugin validate .                 # Claude Code plugin
 
 ## Releasing
 
-1. Set the new version in `chrome-extension/manifest.json`, `.claude-plugin/plugin.json`, `.codex-plugin/plugin.json` and `.antigravity-plugin/plugin.json`.
+1. Set the new version in `chrome-extension/manifest.json`, `.claude-plugin/plugin.json`, `.codex-plugin/plugin.json`, `.antigravity-plugin/plugin.json` and `VERSION` in `mcp-server/server.py`.
 2. Commit, then tag and push: `git tag v0.2.0 && git push origin main v0.2.0`.
 
-The release workflow checks that those manifests carry the tag's version and runs the tests. It then builds `sotto-chrome-extension.zip` (the browser extension) and `sotto-antigravity-plugin.zip` (the plugin in a `sotto/` folder, for unzipping into Antigravity's plugins folder) and publishes both in a GitHub release. The README links to `releases/latest/download/<file>`, which always serves the newest release.
+The release workflow checks that all five carry the tag's version and runs the tests. It then builds `sotto-chrome-extension.zip` (the browser extension) and `sotto-antigravity-plugin.zip` (the plugin in a `sotto/` folder, for unzipping into Antigravity's plugins folder) and publishes both in a GitHub release. The README links to `releases/latest/download/<file>`, which always serves the newest release.

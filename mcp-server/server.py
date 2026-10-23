@@ -17,6 +17,7 @@ import base64
 import http.server
 import json
 import os
+import re
 import socketserver
 import sys
 import threading
@@ -31,7 +32,12 @@ from pathlib import Path
 VERSION = "0.1.0"
 PORT = int(os.environ.get("SOTTO_PORT", "47823"))
 SAVE_DIR = Path(os.environ.get("SOTTO_DIR") or Path.home() / "Sotto")
-EXTENSION_DOWNLOAD = "https://github.com/amn-max/Sotto/releases/latest"
+RELEASES = "https://github.com/amn-max/Sotto/releases/latest"
+EXTENSION_ZIP = f"{RELEASES}/download/sotto-chrome-extension.zip"
+UPDATE_HELP = "https://github.com/amn-max/Sotto#updating"
+UPDATE_URL = os.environ.get("SOTTO_UPDATE_URL", "https://api.github.com/repos/amn-max/Sotto/releases/latest")
+UPDATE_CHECK = os.environ.get("SOTTO_UPDATE_CHECK", "1") != "0"
+UPDATE_EVERY_S = 24 * 3600
 
 QUIET_S = 1.2        # a caption still being spoken is delivered once it stops changing for this long
 MAX_HOLD_S = 10.0    # ...or once it has waited this long, so a monologue still streams in
@@ -90,6 +96,8 @@ class Meeting:
     def __init__(self):
         self.cond = threading.Condition()
         self.lost = False
+        self.extension_version = None
+        self.announced = set()
         self._reset(None)
 
     def _reset(self, code):
@@ -127,6 +135,10 @@ class Meeting:
                 self.notices.append("The user left the call.")
             self.in_call = in_call
             self._note_presenter(tidy(body.get("presenter")) or None)
+            version = tidy(body.get("version")) or None
+            if version != self.extension_version:
+                self.extension_version = version
+                self._note_updates()
             self.cond.notify_all()
             return {"ok": True, "wantFrame": self.want_frame}
 
@@ -258,9 +270,12 @@ class Meeting:
             else:
                 lines.append(
                     "Meet tab not connected. Ask the user to open the meeting in Chrome with the Sotto browser "
-                    f"extension enabled. If they haven't installed it, it's at {EXTENSION_DOWNLOAD}."
+                    f"extension enabled. If they haven't installed it, it's at {RELEASES}."
                 )
             lines.append(f"So far: {len(self.turns)} caption turns, {len(self.frames)} screen frames.")
+            for line in update_lines(self.extension_version):
+                self.announced.add(line)
+                lines.append(line)
             if self.folder:
                 lines.append(f"Saving to {self.folder}")
             return "\n".join(lines)
@@ -322,6 +337,17 @@ class Meeting:
         title = tidy(body.get("title"))
         if title:
             self.title = title[:120]
+
+    def note_updates(self):
+        with self.cond:
+            self._note_updates()
+            self.cond.notify_all()
+
+    def _note_updates(self):
+        for line in update_lines(self.extension_version):
+            if line not in self.announced:
+                self.announced.add(line)
+                self.notices.append(line)
 
     def _note_captions(self, state):
         if state == self.captions:
@@ -557,14 +583,75 @@ class Endpoint:
         return data.get("meeting") if data.get("ok") else None
 
 
+def version_key(text):
+    numbers = [int(n) for n in re.findall(r"\d+", str(text or ""))[:3]]
+    return tuple(numbers + [0] * (3 - len(numbers))) if numbers else None
+
+
+def update_lines(extension_version):
+    """What the user should hear about newer releases: the plugin, the browser extension, or both."""
+    latest, installed = version_key(UPDATES.latest), version_key(VERSION)
+    newest = max(v for v in (latest, installed) if v)
+    lines = []
+    if latest and latest > installed:
+        lines.append(f"Update available: Sotto v{UPDATES.latest} (installed: v{VERSION}). How to update: {UPDATE_HELP}")
+    extension = version_key(extension_version)
+    if extension and extension < newest:
+        lines.append(
+            f"The Sotto browser extension is v{extension_version}; v{'.'.join(map(str, newest))} is out: {EXTENSION_ZIP}"
+        )
+    return lines
+
+
+class Updates:
+    """Asks GitHub for the latest release, at most once a day and never on the user's critical path."""
+
+    def __init__(self):
+        self.latest = None
+        self.started = False
+
+    def check_soon(self):
+        if UPDATE_CHECK and not self.started:
+            self.started = True
+            threading.Thread(target=self._check, daemon=True).start()
+
+    def _check(self):
+        cache = SAVE_DIR / "update-check.json"
+        try:
+            saved = json.loads(cache.read_text(encoding="utf-8"))
+            if time.time() - saved.get("checked_at", 0) < UPDATE_EVERY_S:
+                self.latest = saved.get("latest")
+                MEETING.note_updates()
+                return
+        except (OSError, ValueError):
+            pass
+        request = urllib.request.Request(
+            UPDATE_URL, headers={"Accept": "application/vnd.github+json", "User-Agent": f"sotto/{VERSION}"}
+        )
+        try:
+            with urllib.request.urlopen(request, timeout=5) as response:
+                tag = json.loads(response.read()).get("tag_name") or ""
+        except (urllib.error.URLError, OSError, ValueError):
+            return
+        self.latest = tag.lstrip("v") or None
+        try:
+            SAVE_DIR.mkdir(parents=True, exist_ok=True)
+            cache.write_text(json.dumps({"checked_at": time.time(), "latest": self.latest}), encoding="utf-8")
+        except OSError:
+            pass
+        MEETING.note_updates()
+
+
 MEETING = Meeting()
 ENDPOINT = Endpoint()
+UPDATES = Updates()
 
 
 # MCP tools.
 
 def tool_start(_args):
     note = ENDPOINT.start()
+    UPDATES.check_soon()
     parts = (f"Sotto is listening on 127.0.0.1:{PORT}.", note, MEETING.status())
     return text_result("\n".join(part for part in parts if part))
 

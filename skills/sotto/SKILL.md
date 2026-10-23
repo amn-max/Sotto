@@ -26,6 +26,7 @@ The brief is whatever the user wrote when starting you, plus anything they tell 
 
 1. Call `start`.
 2. If it reports a problem (Meet tab not connected, captions off), tell the user the one thing to fix in a single line, then start the loop anyway. `wait_for_update` reports when it is fixed. Do not wait for the user to confirm.
+3. If it or a later `[status]` line says an update is available, pass that on to the user once, in one line, with its link.
 
 ## When to write
 
