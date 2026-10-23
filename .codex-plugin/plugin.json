@@ -9,7 +9,7 @@
     "meet": {
       "command": "uv",
       "args": ["run", "--quiet", "--no-project", "server.py"],
-      "cwd": "./server",
+      "cwd": "./mcp-server",
       "default_tools_approval_mode": "approve"
     }
   },

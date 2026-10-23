@@ -1,10 +1,10 @@
-// Checks extension/content.js caption handling against a stand-in for Meet's caption list.
+// Checks chrome-extension/content.js caption handling against a stand-in for Meet's caption list.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import vm from 'node:vm';
 
-const source = readFileSync(new URL('../extension/content.js', import.meta.url), 'utf8');
+const source = readFileSync(new URL('../chrome-extension/content.js', import.meta.url), 'utf8');
 
 function load() {
   const sent = [];

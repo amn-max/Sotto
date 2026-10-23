@@ -8,7 +8,7 @@
   "mcpServers": {
     "meet": {
       "command": "uv",
-      "args": ["run", "--quiet", "--no-project", "--directory", "${CLAUDE_PLUGIN_ROOT}/server", "server.py"]
+      "args": ["run", "--quiet", "--no-project", "--directory", "${CLAUDE_PLUGIN_ROOT}/mcp-server", "server.py"]
     }
   }
 }

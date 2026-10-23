@@ -1,4 +1,4 @@
-"""End-to-end checks for server/server.py: driven over MCP stdio the way an agent drives it, and
+"""End-to-end checks for mcp-server/server.py: driven over MCP stdio the way an agent drives it, and
 posted to the way the Chrome extension posts to it."""
 
 import base64
@@ -15,7 +15,7 @@ import urllib.error
 import urllib.request
 from pathlib import Path
 
-SERVER = Path(__file__).resolve().parent.parent / "server" / "server.py"
+SERVER = Path(__file__).resolve().parent.parent / "mcp-server" / "server.py"
 JPEG = b"\xff\xd8\xff\xe0 not really a picture \xff\xd9"
 TAB = {"sid": "test", "meeting": "abc-defg-hij", "title": "Pricing call"}
 

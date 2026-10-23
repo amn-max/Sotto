@@ -5,7 +5,7 @@
     "meet": {
       "command": "uv",
       "args": ["run", "--quiet", "--no-project", "server.py"],
-      "cwd": "${extensionPath}/server"
+      "cwd": "${extensionPath}/mcp-server"
     }
   }
 }

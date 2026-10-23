@@ -78,8 +78,8 @@ flowchart LR
 
 | Piece | What it does |
 |---|---|
-| **Extension** (`extension/`) | Reads Meet's caption list and who is presenting, then posts them to the local server. Encodes a full screen snapshot only when someone else is presenting and the screen has changed and settled. |
-| **Server** (`server/server.py`) | An MCP server for your agent and a loopback endpoint for the extension, in one process with no dependencies. It opens its port only while you're listening. If another session starts listening, that session takes the meeting over, transcript included. |
+| **Extension** (`chrome-extension/`) | Reads Meet's caption list and who is presenting, then posts them to the local server. Encodes a full screen snapshot only when someone else is presenting and the screen has changed and settled. |
+| **Server** (`mcp-server/server.py`) | An MCP server for your agent and a loopback endpoint for the extension, in one process with no dependencies. It opens its port only while you're listening. If another session starts listening, that session takes the meeting over, transcript included. |
 | **Skill** (`skills/sotto/SKILL.md`) | Tells the agent how to run the meeting loop, when a cue is worth writing, and how to keep cues short. |
 
 Each speaker turn reaches the agent once the speaker pauses, usually within a couple of seconds. During long monologues, updates come as the speaker goes.
@@ -96,7 +96,7 @@ git clone <repo-url> sotto
 
 ### 2. Load the browser extension
 
-In the browser profile you join meetings from, open `chrome://extensions`, switch on **Developer mode**, click **Load unpacked**, and choose `sotto/extension`.
+In the browser profile you join meetings from, open `chrome://extensions`, switch on **Developer mode**, click **Load unpacked**, and choose `sotto/chrome-extension`.
 
 ### 3. Add Sotto to your agent
 
@@ -135,7 +135,7 @@ Start a new Codex session afterwards. Sotto's tools are pre-approved in its plug
 <details>
 <summary><b>Any other MCP agent</b></summary>
 
-Register a stdio MCP server that runs `uv run --quiet --no-project server.py` with `sotto/server` as its working directory. Then give the agent the instructions in `skills/sotto/SKILL.md`, as a skill if it supports them or as a custom prompt if not.
+Register a stdio MCP server that runs `uv run --quiet --no-project server.py` with `sotto/mcp-server` as its working directory. Then give the agent the instructions in `skills/sotto/SKILL.md`, as a skill if it supports them or as a custom prompt if not.
 </details>
 
 ## Using Sotto
@@ -194,7 +194,7 @@ Sotto gives your agent five MCP tools:
 
 | Variable | Default | Meaning |
 |---|---|---|
-| `SOTTO_PORT` | `47823` | Local port. If you change it, change it in `extension/manifest.json` and `extension/background.js` too. |
+| `SOTTO_PORT` | `47823` | Local port. If you change it, change it in `chrome-extension/manifest.json` and `chrome-extension/background.js` too. |
 | `SOTTO_DIR` | `~/Sotto` | Where meetings are saved. |
 
 ## Limits
@@ -206,16 +206,18 @@ Sotto gives your agent five MCP tools:
 ## Development
 
 ```
-.claude-plugin/        Claude Code plugin manifest and local marketplace
-.codex-plugin/         Codex plugin manifest
-.agents/plugins/       Codex marketplace
-gemini-extension.json  Gemini CLI extension manifest
-commands/sotto.toml    the /sotto command for Gemini CLI
-extension/             Chrome extension (Manifest V3)
-server/server.py       MCP server and loopback endpoint, standard library only
-skills/sotto/          the skill every agent follows
+chrome-extension/      the browser extension that reads your Meet tab
+mcp-server/server.py   the MCP server and local endpoint, standard library only
+skills/sotto/          the instructions every agent follows
 tests/                 server end-to-end tests and extension logic tests
+
+.claude-plugin/        Claude Code plugin, plus the marketplace Claude Code and Codex install from
+.codex-plugin/         Codex plugin
+gemini-extension.json  Gemini CLI extension
+commands/sotto.toml    the /sotto command for Gemini CLI
 ```
+
+The agent packaging sits at the top level because each agent requires it there: Gemini CLI reads its manifest, `skills/` and `commands/` only from the folder it installs, and Claude Code and Codex refuse server paths outside the plugin folder.
 
 ```bash
 python -m unittest discover -s tests     # server, driven over MCP stdio and HTTP
