@@ -4,8 +4,8 @@
 
 ```mermaid
 flowchart LR
-  subgraph tab["Meet tab (Chrome or Edge)"]
-    captions["Meet's live captions"]
+  subgraph tab["Meeting tab: Google Meet or Teams (Chrome or Edge)"]
+    captions["Live captions"]
     screen["Shared screen"]
   end
   extension["Browser extension"]
@@ -17,7 +17,7 @@ flowchart LR
   server -- "MCP tools" --> agent
 ```
 
-- **Browser extension** (`chrome-extension/`) reads Meet's caption list once a second and who is presenting, and posts them to the local server. It compares a 32×18 thumbnail of the largest video every two seconds. It sends a snapshot on its own when someone else is presenting and the screen has changed and settled, and on request whenever the agent calls `get_screen`, which also covers your own presentation.
+- **Browser extension** (`chrome-extension/`) reads the meeting's caption list once a second and who is presenting, and posts them to the local server. A small adapter per platform (Google Meet, Teams) knows where each page keeps its captions, call controls and shared screen; Teams keeps only the newest captions on the page, so when the visible window shifts the extension starts a new key epoch and the server matches re-sent rows to turns it already has. It compares a 32×18 thumbnail of the largest video every two seconds. It sends a snapshot on its own when someone else is presenting and the screen has changed and settled, and on request whenever the agent calls `get_screen`, which also covers your own presentation.
 - **MCP server** (`mcp-server/server.py`) is standard-library Python. It speaks MCP over stdio to the agent and runs a loopback HTTP endpoint for the extension. The endpoint opens only after the agent calls `start`; a second session calling `start` takes the meeting over, transcript included. Requests must carry the `X-Sotto` header and no web-page origin.
 - **Skill** (`skills/sotto/SKILL.md`) is the instructions every agent follows: the listening loop, when a cue is worth writing, and how to keep it short.
 
@@ -27,7 +27,7 @@ flowchart LR
 chrome-extension/      browser extension (Manifest V3)
 mcp-server/server.py   MCP server and loopback endpoint
 skills/sotto/          the skill every agent follows
-assets/                icon
+assets/                icon, and the README demo (assets/demo/)
 tests/                 server end-to-end tests and extension logic tests
 .github/workflows/     release build
 
@@ -43,7 +43,7 @@ The agent packaging sits at the top level because each agent requires it there. 
 
 | Tool | Purpose |
 |---|---|
-| `start` | Opens the local endpoint and reports what's connected: the Meet tab, captions on or off, who is presenting. Safe to call again as a status check. |
+| `start` | Opens the local endpoint and reports what's connected: the meeting tab, captions on or off, who is presenting. Safe to call again as a status check. |
 | `wait_for_update` | The listening loop. Waits up to 55 seconds for new speech, a screen change or a status change, then returns it. |
 | `get_screen` | Returns a saved snapshot, or asks the tab for a fresh one. |
 | `get_transcript` | Everything said so far, or the last N minutes. |
@@ -73,7 +73,7 @@ Clone the repository, then point your browser and agent at the clone instead of 
 | Antigravity | Copy the clone into `~/.gemini/config/plugins/sotto` (app or IDE), or `agy plugin install ./sotto` (CLI) |
 | Codex CLI | `codex plugin marketplace add ./sotto` then `codex plugin add sotto@sotto` (copied, so reinstall after changes) |
 
-After changing the extension, reload it in `chrome://extensions` and refresh the Meet tab. After changing the server or the skill, start a new agent session.
+After changing the extension, reload it in `chrome://extensions` and refresh the meeting tab. After changing the server or the skill, start a new agent session.
 
 ## Tests
 
@@ -82,6 +82,16 @@ python -m unittest discover -s tests     # server, driven over MCP stdio and HTT
 node --test tests/content.test.mjs       # extension caption handling
 claude plugin validate .                 # Claude Code plugin
 ```
+
+## Demo
+
+`assets/demo.gif` is rendered from `assets/demo/demo.html`, a scene whose `render(t)` sets everything on screen for time `t`. `assets/demo/render.py` steps that clock in Chrome and encodes the frames with ffmpeg:
+
+```bash
+uv run --with playwright python assets/demo/render.py
+```
+
+It needs Google Chrome and ffmpeg. To change the story, edit the `speech` and `feed` timelines at the bottom of `demo.html`.
 
 ## Releasing
 

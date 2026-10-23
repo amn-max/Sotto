@@ -164,7 +164,7 @@ class ServerTest(unittest.TestCase):
         copilot = self.session()
         with self.assertRaises(urllib.error.URLError):
             report(self.port)
-        self.assertIn("Meet tab not connected", copilot.text("start"))
+        self.assertIn("Meeting tab not connected", copilot.text("start"))
         self.assertEqual(report(self.port)[1], {"ok": True, "wantFrame": False})
         self.assertIn("captions on", copilot.text("start"))
 
@@ -175,7 +175,7 @@ class ServerTest(unittest.TestCase):
         self.keep_reporting()
         captions(self.port, [("Rahul", "can we close pricing today"), ("You", "maybe")])
         first = copilot.text("wait_for_update", timeout_s=5)
-        self.assertIn("[status] Meet tab connected", first)
+        self.assertIn("[status] Meeting tab connected", first)
         self.assertIn("Rahul: can we close pricing today", first)
         self.assertNotIn("You:", first)
         self.assertIn("You: maybe", copilot.text("wait_for_update", timeout_s=5))

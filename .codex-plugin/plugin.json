@@ -1,9 +1,9 @@
 {
   "name": "sotto",
   "version": "0.1.1",
-  "description": "A silent copilot for Google Meet. Reads your own Meet captions and shared screen through a local Chrome extension and gives you private cues in text: what to ask, what to expect, and context from your work.",
+  "description": "A silent copilot for Google Meet and Microsoft Teams. Reads your own meeting captions and shared screen through a local Chrome extension and gives you private cues in text: what to ask, what to expect, and context from your work.",
   "author": { "name": "Ayush Naik" },
-  "keywords": ["meetings", "google-meet", "captions", "copilot", "mcp"],
+  "keywords": ["meetings", "google-meet", "microsoft-teams", "captions", "copilot", "mcp"],
   "skills": "./skills/",
   "mcpServers": {
     "meet": {
@@ -15,8 +15,8 @@
   },
   "interface": {
     "displayName": "Sotto",
-    "shortDescription": "A silent copilot for your Google Meet calls.",
-    "longDescription": "Sotto reads your own Google Meet tab (live captions and the shared screen) through a local Chrome extension and gives you short, private cues while the meeting happens: what to ask, what to expect, and context from your work. Nothing joins the call.",
+    "shortDescription": "A silent copilot for your Google Meet and Teams calls.",
+    "longDescription": "Sotto reads your own Google Meet or Teams tab (live captions and the shared screen) through a local Chrome extension and gives you short, private cues while the meeting happens: what to ask, what to expect, and context from your work. Nothing joins the call.",
     "developerName": "Ayush Naik",
     "category": "Productivity",
     "capabilities": ["Interactive"],

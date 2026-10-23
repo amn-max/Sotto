@@ -41,7 +41,7 @@ UPDATE_EVERY_S = 24 * 3600
 
 QUIET_S = 1.2        # a caption still being spoken is delivered once it stops changing for this long
 MAX_HOLD_S = 10.0    # ...or once it has waited this long, so a monologue still streams in
-STALE_S = 8.0        # no report from the Meet tab for this long means the tab is gone
+STALE_S = 8.0        # no report from the meeting tab for this long means the tab is gone
 REALIGN_S = 15.0     # after Meet rebuilds its caption list, re-sent rows are matched to known turns
 MAX_BODY = 8_000_000
 MAX_TRANSCRIPT_CHARS = 80_000
@@ -97,6 +97,7 @@ class Meeting:
         self.cond = threading.Condition()
         self.lost = False
         self.extension_version = None
+        self.platform = None
         self.announced = set()
         self._reset(None)
 
@@ -127,7 +128,7 @@ class Meeting:
             self._follow(body)
             if not self.connected:
                 self.connected = True
-                self.notices.append(f"Meet tab connected: {self._label()}.")
+                self.notices.append(f"Meeting tab connected: {self._label()}.")
             self.last_report = now
             self._note_captions(body.get("captions") or "unknown")
             in_call = bool(body.get("inCall"))
@@ -229,8 +230,8 @@ class Meeting:
                 return frame, None if frame else f"There is no frame {frame_id}."
             if not self._live_tab(time.time()):
                 if self.frames:
-                    return self.frames[-1], "The Meet tab isn't connected; this is the last saved frame."
-                return None, "The Meet tab isn't connected, so there's nothing to capture."
+                    return self.frames[-1], "The meeting tab isn't connected; this is the last saved frame."
+                return None, "The meeting tab isn't connected, so there's nothing to capture."
             asked = time.time()
             count = len(self.frames)
             self.want_frame = True
@@ -241,8 +242,8 @@ class Meeting:
                 return self.frames[-1], None
             self.want_frame = False
             if self.no_video_at >= asked:
-                return None, "There's no video in the Meet tab to capture right now."
-            return None, "The Meet tab didn't send a frame in time; try again."
+                return None, "There's no video in the meeting tab to capture right now."
+            return None, "The meeting tab didn't send a frame in time; try again."
 
     def transcript(self, minutes):
         with self.cond:
@@ -259,17 +260,17 @@ class Meeting:
         with self.cond:
             lines = []
             if self._live_tab(time.time()):
-                state = [f"Meet tab connected: {self._label()}", "in the call" if self.in_call else "not in the call yet"]
+                state = [f"Meeting tab connected: {self._label()}", "in the call" if self.in_call else "not in the call yet"]
                 state.append({
                     "on": "captions on",
-                    "off": "captions OFF (ask the user to press c; only they see captions)",
+                    "off": f"captions OFF (ask the user to turn them on: {self._captions_hint()}; only they see captions)",
                 }.get(self.captions, "captions state not known yet"))
                 if self.presenter:
                     state.append(f"{self.presenter} is presenting")
                 lines.append(", ".join(state) + ".")
             else:
                 lines.append(
-                    "Meet tab not connected. Ask the user to open the meeting in Chrome with the Sotto browser "
+                    "Meeting tab not connected. Ask the user to open the meeting (Google Meet or Teams) in Chrome or Edge with the Sotto browser "
                     f"extension enabled. If they haven't installed it, it's at {RELEASES}."
                 )
             lines.append(f"So far: {len(self.turns)} caption turns, {len(self.frames)} screen frames.")
@@ -337,6 +338,14 @@ class Meeting:
         title = tidy(body.get("title"))
         if title:
             self.title = title[:120]
+        platform = tidy(body.get("platform"))
+        if platform:
+            self.platform = platform
+
+    def _captions_hint(self):
+        if self.platform == "teams":
+            return "in Teams, More, then Captions"
+        return "in Google Meet, press c"
 
     def note_updates(self):
         with self.cond:
@@ -353,7 +362,7 @@ class Meeting:
         if state == self.captions:
             return
         if state == "off":
-            self.notices.append("Captions are OFF in the Meet tab, so nothing is being heard. Ask the user to turn them on (press c).")
+            self.notices.append(f"Captions are OFF in the meeting tab, so nothing is being heard. Ask the user to turn them on ({self._captions_hint()}).")
         elif state == "on" and self.captions == "off":
             self.notices.append("Captions are back on.")
         self.captions = state
@@ -382,7 +391,7 @@ class Meeting:
     def _collect(self, now):
         if self.connected and now - self.last_report > STALE_S:
             self.connected = False
-            self.notices.append("The Meet tab stopped reporting (closed, reloaded, or the extension is off).")
+            self.notices.append("The meeting tab stopped reporting (closed, reloaded, or the extension is off).")
         out = [f"[status] {notice}" for notice in self.notices]
         self.notices.clear()
         for turn in self.turns:
@@ -431,7 +440,7 @@ class Meeting:
     def _folder(self):
         if self.folder is None:
             stamp = datetime.now().strftime("%Y-%m-%d_%H%M")
-            self.folder = SAVE_DIR / "meetings" / f"{stamp}_{self.code or 'meet'}"
+            self.folder = SAVE_DIR / "meetings" / f"{stamp}_{self.code or self.platform or 'meeting'}"
             self.folder.mkdir(parents=True, exist_ok=True)
         return self.folder
 
@@ -665,7 +674,7 @@ def tool_wait(args):
     lines = MEETING.wait(timeout)
     if lines:
         return text_result("\n".join(lines))
-    return text_result("(no new speech)" if MEETING.is_connected() else "(no new speech; the Meet tab is not connected)")
+    return text_result("(no new speech)" if MEETING.is_connected() else "(no new speech; the meeting tab is not connected)")
 
 
 def tool_get_screen(args):
@@ -677,7 +686,7 @@ def tool_get_screen(args):
     if frame is None:
         return text_result(note)
     data = base64.b64encode(Path(frame["path"]).read_bytes()).decode("ascii")
-    whose = f"{frame['presenter']}'s shared screen" if frame.get("presenter") else "the Meet tab"
+    whose = f"{frame['presenter']}'s shared screen" if frame.get("presenter") else "the meeting tab"
     caption = f"Frame {frame['id']} at {clock(frame['at'])}, {whose}, {frame['w']}x{frame['h']}."
     if note:
         caption += f" {note}"
@@ -709,7 +718,7 @@ TOOLS = [
         "name": "start",
         "description": (
             "Start Sotto, or check on it. Opens the local endpoint the Sotto Chrome "
-            "extension reports to and says what is connected: the Meet tab, whether captions are on, who is "
+            "extension reports to and says what is connected: the meeting tab, whether captions are on, who is "
             "presenting. Safe to call again at any time."
         ),
         "inputSchema": {"type": "object", "properties": {}},
@@ -736,7 +745,7 @@ TOOLS = [
         "name": "get_screen",
         "description": (
             "Look at the shared screen. With a frame id from a [screen] notice, returns that saved frame. "
-            "Without one, asks the Meet tab for a fresh snapshot of its largest video and returns it."
+            "Without one, asks the meeting tab for a fresh snapshot of its largest video and returns it."
         ),
         "inputSchema": {"type": "object", "properties": {"frame": {"type": "integer", "minimum": 1}}},
         "annotations": READS_MEETING,

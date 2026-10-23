@@ -3,12 +3,12 @@
   "name": "sotto",
   "displayName": "Sotto",
   "version": "0.1.1",
-  "description": "A silent copilot for Google Meet. Reads your own Meet captions and shared screen through a local browser extension and gives you private cues in text: what to ask, what to expect, and context from your work.",
+  "description": "A silent copilot for Google Meet and Microsoft Teams. Reads your own meeting captions and shared screen through a local browser extension and gives you private cues in text: what to ask, what to expect, and context from your work.",
   "logo": "assets/icon.png",
   "suggestedPrompts": [
     "/sotto Help me in this meeting",
     "/sotto Vendor call: push for a 30-day pilot"
   ],
   "repository": "https://github.com/amn-max/Sotto",
-  "keywords": ["meetings", "google-meet", "captions", "copilot"]
+  "keywords": ["meetings", "google-meet", "microsoft-teams", "captions", "copilot"]
 }

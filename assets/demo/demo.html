@@ -1,0 +1,339 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Sotto demo</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 1440px; height: 810px; overflow: hidden; }
+  body {
+    font-family: "Segoe UI", system-ui, sans-serif;
+    background:
+      radial-gradient(ellipse 60% 70% at 28% 62%, #3d7fe0 0%, rgba(61,127,224,0) 60%),
+      radial-gradient(ellipse 45% 55% at 72% 38%, rgba(0,190,255,.55) 0%, rgba(0,190,255,0) 60%),
+      radial-gradient(ellipse 50% 40% at 55% 85%, rgba(120,90,255,.45) 0%, rgba(120,90,255,0) 60%),
+      linear-gradient(135deg, #081733 0%, #13306a 55%, #0b1d45 100%);
+    color: #e8eaed;
+  }
+  .window { position: absolute; border-radius: 8px; overflow: hidden; box-shadow: 0 18px 50px rgba(0,0,0,.55), 0 0 0 1px rgba(255,255,255,.08); }
+  .controls { position: absolute; top: 0; right: 0; display: flex; height: 32px; }
+  .controls span { width: 44px; display: grid; place-items: center; color: #c5c5c5; font-size: 12px; }
+
+  /* Chrome */
+  #chrome { left: 12px; top: 12px; width: 884px; height: 738px; background: #202124; }
+  .tabstrip { height: 38px; background: #1c1c1d; position: relative; }
+  .tab { position: absolute; left: 8px; top: 6px; width: 236px; height: 32px; background: #35363a; border-radius: 8px 8px 0 0; display: flex; align-items: center; padding: 0 10px; gap: 8px; font-size: 12px; color: #e8eaed; }
+  .tab .x { margin-left: auto; color: #9aa0a6; font-size: 11px; }
+  .favicon { width: 16px; height: 13px; border-radius: 3px; background: linear-gradient(90deg, #00832d 0 30%, #0066da 30% 62%, #ffba00 62%); position: relative; }
+  .newtab { position: absolute; left: 252px; top: 12px; color: #9aa0a6; font-size: 16px; }
+  .toolbar { height: 40px; background: #35363a; display: flex; align-items: center; padding: 0 10px; gap: 14px; color: #9aa0a6; font-size: 15px; }
+  .omnibox { flex: 1; height: 30px; background: #202124; border-radius: 15px; display: flex; align-items: center; padding: 0 14px; gap: 10px; font-size: 13.5px; color: #e8eaed; }
+  .omnibox .host { color: #e8eaed; }
+  .omnibox .path { color: #9aa0a6; }
+  .lock { width: 12px; height: 12px; border: 1.6px solid #9aa0a6; border-radius: 3px; position: relative; top: 2px; }
+  .lock::before { content: ""; position: absolute; left: 1px; top: -7px; width: 6px; height: 6px; border: 1.6px solid #9aa0a6; border-bottom: none; border-radius: 4px 4px 0 0; }
+
+  /* Meet */
+  .meet { position: absolute; left: 0; top: 78px; right: 0; bottom: 0; background: #202124; font-family: "Google Sans", "Segoe UI", sans-serif; }
+  .stage { position: absolute; left: 16px; right: 16px; top: 16px; bottom: 214px; }
+  .grid { position: absolute; inset: 0; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 10px; }
+  .tile { position: relative; background: #3c4043; border-radius: 10px; overflow: hidden; }
+  .tile .avatar { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); border-radius: 50%; display: grid; place-items: center; color: #fff; font-weight: 500; }
+  .grid .avatar { width: 92px; height: 92px; font-size: 40px; }
+  .tile .name { position: absolute; left: 12px; bottom: 10px; font-size: 13px; color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,.6); }
+  .tile .muted { position: absolute; right: 10px; top: 10px; width: 26px; height: 26px; border-radius: 50%; background: rgba(32,33,36,.6); display: grid; place-items: center; }
+  .tile .talk { position: absolute; right: 10px; top: 10px; width: 26px; height: 26px; border-radius: 50%; background: #1a73e8; display: none; align-items: center; justify-content: center; gap: 2px; }
+  .tile .talk i { width: 3px; border-radius: 2px; background: #fff; display: block; }
+  .tile.speaking { box-shadow: inset 0 0 0 3px #8ab4f8; }
+  .tile.speaking .talk { display: flex; }
+  .tile.speaking .muted { display: none; }
+
+  .presenting { position: absolute; inset: 0; display: none; }
+  .presenting .main { position: absolute; left: 0; top: 0; bottom: 0; right: 188px; background: #000; border-radius: 10px; overflow: hidden; display: grid; place-items: center; }
+  .presenting .chip { position: absolute; left: 12px; bottom: 10px; font-size: 13px; color: #fff; text-shadow: 0 1px 2px #000; }
+  .presenting .strip { position: absolute; right: 0; top: 0; width: 176px; bottom: 0; display: flex; flex-direction: column; gap: 10px; }
+  .presenting .strip .tile { flex: 1; }
+  .presenting .strip .avatar { width: 54px; height: 54px; font-size: 24px; }
+
+  .slide { width: 600px; height: 338px; background: #fff; border-radius: 2px; color: #202124; position: relative; font-family: "Segoe UI", sans-serif; padding: 34px 40px; }
+  .slide .brand { font-size: 12px; letter-spacing: .12em; color: #5f6368; text-transform: uppercase; }
+  .slide h1 { font-size: 30px; font-weight: 600; margin: 8px 0 22px; color: #1a1a1a; }
+  .slide .row { display: flex; justify-content: space-between; align-items: baseline; padding: 11px 0; border-top: 1px solid #e3e5e8; font-size: 16px; color: #3c4043; }
+  .slide .row b { font-size: 22px; color: #0b57d0; font-weight: 600; }
+  .slide .foot { position: absolute; left: 40px; bottom: 16px; font-size: 10px; color: #9aa0a6; }
+
+  .captions { position: absolute; left: 50%; transform: translateX(-50%); bottom: 88px; height: 122px; width: 720px; display: flex; flex-direction: column; justify-content: flex-end; gap: 10px; }
+  .cap { display: flex; gap: 12px; align-items: flex-start; }
+  .cap .face { width: 32px; height: 32px; border-radius: 50%; flex: none; display: grid; place-items: center; font-size: 13px; color: #fff; }
+  .cap .who { font-size: 12.5px; color: #e8eaed; font-weight: 600; margin-bottom: 2px; }
+  .cap .said { font-size: 19px; line-height: 1.3; color: #fff; }
+
+  .bar { position: absolute; left: 0; right: 0; bottom: 0; height: 80px; display: flex; align-items: center; padding: 0 22px; }
+  .bar .left { font-size: 15px; color: #e8eaed; width: 230px; }
+  .bar .left span { color: #bdc1c6; }
+  .buttons { flex: 1; display: flex; justify-content: center; gap: 10px; }
+  .btn { width: 44px; height: 44px; border-radius: 50%; background: #3c4043; display: grid; place-items: center; }
+  .btn.red { background: #ea4335; }
+  .btn.on { background: #8ab4f8; }
+  .btn.leave { width: 62px; border-radius: 22px; background: #ea4335; }
+  .bar .right { width: 230px; display: flex; justify-content: flex-end; gap: 18px; }
+
+  /* VS Code + Claude Code */
+  #code { left: 908px; top: 12px; width: 520px; height: 738px; background: #1f1f1f; }
+  .titlebar { height: 32px; background: #181818; border-bottom: 1px solid #2b2b2b; display: flex; align-items: center; padding-left: 12px; gap: 14px; font-size: 12.5px; color: #cccccc; }
+  .titlebar .menu { display: flex; gap: 12px; color: #bdbdbd; }
+  .titlebar .title { position: absolute; left: 0; right: 0; text-align: center; pointer-events: none; color: #9d9d9d; font-size: 12px; }
+  .vscode-icon { width: 15px; height: 15px; border-radius: 3px; background: linear-gradient(135deg, #3ea6ff, #0065a9); }
+  .activity { position: absolute; left: 0; top: 32px; bottom: 22px; width: 44px; background: #181818; border-right: 1px solid #2b2b2b; display: flex; flex-direction: column; align-items: center; padding-top: 12px; gap: 22px; }
+  .activity i { width: 22px; height: 22px; border: 2px solid #868686; border-radius: 5px; opacity: .7; display: block; }
+  .activity .claude { border: none; opacity: 1; color: #d97757; font-size: 22px; font-style: normal; line-height: 22px; text-align: center; position: relative; }
+  .activity .claude::before { content: ""; position: absolute; left: -11px; top: -4px; width: 2px; height: 30px; background: #d97757; }
+  .statusbar { position: absolute; left: 0; right: 0; bottom: 0; height: 22px; background: #181818; border-top: 1px solid #2b2b2b; font-size: 11.5px; color: #9d9d9d; display: flex; align-items: center; gap: 14px; padding: 0 10px; }
+  .panel { position: absolute; left: 44px; right: 0; top: 32px; bottom: 22px; display: flex; flex-direction: column; }
+  .panel-head { height: 36px; display: flex; align-items: center; padding: 0 14px; gap: 8px; font-size: 12px; color: #cccccc; border-bottom: 1px solid #2b2b2b; }
+  .panel-head .spark { color: #d97757; font-size: 15px; }
+  .panel-head .sub { color: #8b8b8b; margin-left: auto; }
+  .feed { flex: 1; overflow: hidden; padding: 14px 16px 6px; display: flex; flex-direction: column; gap: 10px; }
+  .feed > * { flex: none; }
+  .user { align-self: flex-end; max-width: 92%; background: #2d2d2d; border: 1px solid #3a3a3a; border-radius: 10px; padding: 9px 12px; font-size: 13px; line-height: 1.45; color: #e7e7e7; }
+  .user .cmd { color: #e6a179; font-family: "Cascadia Code", Consolas, monospace; font-size: 12.5px; }
+  .tool { font-size: 12px; color: #a0a0a0; }
+  .tool .head { display: flex; align-items: center; gap: 7px; }
+  .tool .dot { width: 7px; height: 7px; border-radius: 50%; background: #4ec27a; flex: none; }
+  .tool.busy .dot { background: #d97757; }
+  .tool .head b { color: #d4d4d4; font-weight: 600; }
+  .tool .result { margin: 5px 0 0 14px; padding: 6px 9px; border-left: 2px solid #3a3a3a; font-family: "Cascadia Code", Consolas, monospace; font-size: 11px; color: #8f8f8f; line-height: 1.5; white-space: pre-wrap; }
+  .tool .thumb { margin: 6px 0 0 14px; width: 168px; height: 95px; border-radius: 4px; overflow: hidden; border: 1px solid #3a3a3a; position: relative; background: #fff; }
+  .tool .thumb .slide { transform: scale(.28); transform-origin: 0 0; position: absolute; left: 0; top: 0; }
+  .say { font-size: 13.5px; line-height: 1.5; color: #e2e2e2; }
+  .cue { font-size: 13.5px; line-height: 1.5; color: #e2e2e2; padding-left: 2px; }
+  .cue p + p { margin-top: 4px; }
+  .cue b { color: #ffffff; }
+  .cue b.ask { color: #f0a274; }
+  .cue b.flag { color: #f28b82; }
+  .cue b.context { color: #8ab4f8; }
+  .caret { display: inline-block; width: 7px; height: 14px; background: #d97757; vertical-align: -2px; margin-left: 1px; }
+  .composer { margin: 6px 12px 12px; border: 1px solid #3c3c3c; border-radius: 10px; background: #252526; padding: 10px 12px 8px; }
+  .composer .hint { font-size: 13px; color: #7a7a7a; }
+  .composer .row { display: flex; align-items: center; justify-content: space-between; margin-top: 10px; font-size: 11.5px; color: #8b8b8b; }
+  .working { font-size: 12.5px; color: #d97757; padding: 0 16px 4px; height: 20px; }
+  .working span { color: #8b8b8b; }
+
+  /* Taskbar */
+  .taskbar { position: absolute; left: 0; right: 0; bottom: 0; height: 48px; background: rgba(28,28,30,.86); border-top: 1px solid rgba(255,255,255,.08); display: flex; align-items: center; justify-content: center; gap: 10px; }
+  .taskbar .app { width: 38px; height: 38px; border-radius: 6px; display: grid; place-items: center; position: relative; }
+  .taskbar .app.open { background: rgba(255,255,255,.07); }
+  .taskbar .app.open::after { content: ""; position: absolute; bottom: 2px; width: 14px; height: 3px; border-radius: 2px; background: #9aa0a6; }
+  .taskbar .app.active::after { background: #60cdff; width: 18px; }
+  .clock { position: absolute; right: 16px; top: 7px; text-align: right; font-size: 12px; line-height: 1.35; color: #e8eaed; }
+  .tray { position: absolute; right: 108px; top: 15px; display: flex; gap: 12px; color: #e8eaed; font-size: 13px; }
+</style>
+</head>
+<body>
+
+<div class="window" id="chrome">
+  <div class="tabstrip">
+    <div class="tab"><div class="favicon"></div>Meet – Pricing call<span class="x">✕</span></div>
+    <div class="newtab">+</div>
+    <div class="controls"><span>—</span><span>☐</span><span>✕</span></div>
+  </div>
+  <div class="toolbar">
+    <span>←</span><span>→</span><span>⟳</span>
+    <div class="omnibox"><div class="lock"></div><span><span class="host">meet.google.com</span><span class="path">/abc-defg-hij</span></span></div>
+    <span>☆</span><span>⋮</span>
+  </div>
+  <div class="meet">
+    <div class="stage">
+      <div class="grid" id="grid"></div>
+      <div class="presenting" id="presenting">
+        <div class="main"><div class="slide" id="slide"></div><div class="chip">Priya Shah (Presenting)</div></div>
+        <div class="strip" id="strip"></div>
+      </div>
+    </div>
+    <div class="captions" id="captions"></div>
+    <div class="bar">
+      <div class="left">10:32 AM <span>|</span> abc-defg-hij</div>
+      <div class="buttons">
+        <div class="btn"><svg width="20" height="20" viewBox="0 0 24 24" fill="#e8eaed"><path d="M12 14a3 3 0 0 0 3-3V5a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.92V21h2v-3.08A7 7 0 0 0 19 11h-2z"/></svg></div>
+        <div class="btn red"><svg width="20" height="20" viewBox="0 0 24 24" fill="#fff"><path d="M21 6.5l-4 4V7a1 1 0 0 0-1-1H9.82L21 17.18V6.5zM3.27 2L2 3.27 4.73 6H4a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h12c.21 0 .39-.08.54-.18L19.73 21 21 19.73 3.27 2z"/></svg></div>
+        <div class="btn on"><svg width="20" height="20" viewBox="0 0 24 24" fill="#202124"><path d="M19 4H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2zm-8 7H9.5v-.5h-2v3h2V13H11v1a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1v-4a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1v1zm7 0h-1.5v-.5h-2v3h2V13H18v1a1 1 0 0 1-1 1h-3a1 1 0 0 1-1-1v-4a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1v1z"/></svg></div>
+        <div class="btn"><svg width="20" height="20" viewBox="0 0 24 24" fill="#e8eaed"><path d="M20 18a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2H0v2h24v-2h-4zM13 14.17V12c-2.78 0-4.61.85-6 2.72.56-2.67 2.11-5.33 6-5.87V6.72L17 10.4l-4 3.77z"/></svg></div>
+        <div class="btn"><svg width="20" height="20" viewBox="0 0 24 24" fill="#e8eaed"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg></div>
+        <div class="btn leave"><svg width="24" height="24" viewBox="0 0 24 24" fill="#fff"><path d="M12 9c-1.6 0-3.15.25-4.6.72v3.1c0 .39-.23.74-.56.9-.98.49-1.87 1.12-2.66 1.85-.18.18-.43.28-.7.28-.28 0-.53-.11-.71-.29L.29 13.08a.956.956 0 0 1 0-1.36C3.34 8.78 7.46 7 12 7s8.66 1.78 11.71 4.72c.18.18.29.43.29.71 0 .28-.11.53-.29.71l-2.48 2.48c-.18.18-.43.29-.71.29-.27 0-.52-.11-.7-.28a11.27 11.27 0 0 0-2.67-1.85.996.996 0 0 1-.56-.9v-3.1C15.15 9.25 13.6 9 12 9z"/></svg></div>
+      </div>
+      <div class="right">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="#e8eaed"><path d="M11 7h2v2h-2zm0 4h2v6h-2zm1-9C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg>
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="#e8eaed"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="#e8eaed"><path d="M20 2H4a2 2 0 0 0-2 2v18l4-4h14a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2zm0 14H5.17L4 17.17V4h16v12z"/></svg>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="window" id="code">
+  <div class="titlebar">
+    <div class="vscode-icon"></div>
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="#bdbdbd"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    <div class="title">sotto — Visual Studio Code</div>
+    <div class="controls"><span>—</span><span>☐</span><span>✕</span></div>
+  </div>
+  <div class="activity"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#858585" stroke-width="1.6"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/></svg><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#858585" stroke-width="1.6"><circle cx="10.5" cy="10.5" r="6"/><path d="M15 15l5.5 5.5"/></svg><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#858585" stroke-width="1.6"><circle cx="6" cy="5" r="2"/><circle cx="6" cy="19" r="2"/><circle cx="18" cy="8" r="2"/><path d="M6 7v10M18 10c0 4-6 3-11.2 7.5"/></svg><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#858585" stroke-width="1.6"><rect x="3" y="11" width="7" height="7"/><rect x="11" y="11" width="7" height="7"/><rect x="3" y="3" width="7" height="7"/><rect x="14" y="2" width="7" height="7" transform="rotate(12 17.5 5.5)"/></svg><span class="claude">✻</span></div>
+  <div class="panel">
+    <div class="panel-head"><span class="spark">✻</span>Claude Code<span class="sub">Pricing call</span></div>
+    <div class="feed" id="feed"></div>
+    <div class="working" id="working"></div>
+    <div class="composer">
+      <div class="hint">Ask anything during the meeting…</div>
+      <div class="row"><span>⏎ to send</span><span>Opus</span></div>
+    </div>
+  </div>
+  <div class="statusbar"><span>⎇ main</span><span>⊗ 0 ⚠ 0</span><span style="margin-left:auto">Sotto: listening</span></div>
+</div>
+
+<div class="taskbar">
+  <div class="app"><svg width="22" height="22" viewBox="0 0 24 24"><rect x="2" y="2" width="9.5" height="9.5" fill="#60cdff"/><rect x="12.5" y="2" width="9.5" height="9.5" fill="#60cdff"/><rect x="2" y="12.5" width="9.5" height="9.5" fill="#60cdff"/><rect x="12.5" y="12.5" width="9.5" height="9.5" fill="#60cdff"/></svg></div>
+  <div class="app"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#e8eaed" stroke-width="2"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5L21 21"/></svg></div>
+  <div class="app open"><svg width="22" height="22" viewBox="0 0 24 24"><path d="M3 6a2 2 0 0 1 2-2h5l2 2h7a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" fill="#f8c444"/></svg></div>
+  <div class="app open active"><svg width="24" height="24" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#db4437"/><path d="M12 2a10 10 0 0 1 8.66 5H12z" fill="#db4437"/><path d="M3.34 7A10 10 0 0 0 7 20.66L11.5 13z" fill="#0f9d58"/><path d="M20.66 7H12l4.5 7.8L13 22A10 10 0 0 0 20.66 7z" fill="#ffcd40"/><circle cx="12" cy="12" r="4.4" fill="#fff"/><circle cx="12" cy="12" r="3.4" fill="#4285f4"/></svg></div>
+  <div class="app open"><svg width="22" height="22" viewBox="0 0 24 24"><path d="M17 2l5 2.5v15L17 22 7.5 13.3 3.3 16.5 2 15.8V8.2l1.3-.7 4.2 3.2zM17 7.3L11.4 12l5.6 4.7z" fill="#3ea6ff"/></svg></div>
+  <div class="tray"><span>⌃</span><span>📶</span><span>🔊</span></div>
+  <div class="clock">10:32 AM<br>23-10-2026</div>
+</div>
+
+<script>
+const people = {
+  rahul:  { name: 'Rahul Mehta', initial: 'R', color: '#12b5cb' },
+  priya:  { name: 'Priya Shah',  initial: 'P', color: '#a142f4' },
+  daniel: { name: 'Daniel Cho',  initial: 'D', color: '#e8710a' },
+  you:    { name: 'You',         initial: 'A', color: '#34a853' },
+};
+
+// What people say, and when.
+const speech = [
+  { who: 'rahul', from: 1.0, to: 4.6, text: 'We can go live on the 15th, assuming your side has the webhook ready.' },
+  { who: 'you',   from: 7.6, to: 9.0, text: 'Sure. Can you walk us through pricing?' },
+  { who: 'priya', from: 9.2, to: 10.2, text: 'Yes, sharing the deck now.' },
+  { who: 'priya', from: 11.0, to: 14.4, text: "So it's 38 paise a minute on a twelve-month term, with a 90-day pilot." },
+];
+const PRESENT_AT = 10.4;
+
+// What Claude Code shows, and when.
+const feed = [
+  { at: 0, kind: 'user', html: '<span class="cmd">/sotto</span> Vendor call on telephony pricing. I want under 40 paise a minute and a 30-day pilot.' },
+  { at: 0, kind: 'tool', name: 'start', done: 0, result: 'Sotto is listening on 127.0.0.1:47823.\nMeeting tab connected: abc-defg-hij, captions on.' },
+  { at: 0, kind: 'say', text: "Listening. I'll speak up only when it helps." },
+  { at: 0, kind: 'tool', name: 'wait_for_update', done: 5.0, result: '10:32:14 Rahul Mehta: We can go live on the 15th, assuming your side has the webhook ready.' },
+  { at: 5.3, kind: 'cue', lines: [
+    ['ask', 'Ask:', 'Which webhook — booking-created only, or reschedules and cancels too?'],
+    ['flag', 'Flag:', '"Assuming your side" puts the date\'s risk on you. Get his dependency list in writing.'],
+  ] },
+  { at: 7.4, kind: 'tool', name: 'wait_for_update', done: 10.9, result: "[status] Priya Shah started presenting.\n[screen] Priya Shah's shared screen changed: frame 1." },
+  { at: 11.1, kind: 'tool', name: 'get_screen', done: 11.8, thumb: true },
+  { at: 12.1, kind: 'cue', lines: [
+    ['context', 'Context:', 'The slide says ₹0.38/min. The quote in last week\'s notes was ₹0.34.'],
+  ] },
+  { at: 13.0, kind: 'tool', name: 'wait_for_update', done: 14.7, result: "10:32:41 Priya Shah: So it's 38 paise a minute on a twelve-month term, with a 90-day pilot." },
+  { at: 15.0, kind: 'cue', lines: [
+    ['ask', 'Ask:', 'Can the pilot be 30 days at the same rate? That\'s what you came for.'],
+  ] },
+  { at: 16.3, kind: 'tool', name: 'wait_for_update', done: 99, result: '' },
+];
+
+const SLIDE = `
+  <div class="brand">Ringline · Proposal</div>
+  <h1>Pricing for your team</h1>
+  <div class="row"><span>Voice minutes</span><b>₹0.38 / min</b></div>
+  <div class="row"><span>Commitment</span><b>12 months</b></div>
+  <div class="row"><span>Pilot</span><b>90 days</b></div>
+  <div class="foot">Ringline Communications · Confidential</div>`;
+
+const $ = (id) => document.getElementById(id);
+const esc = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;');
+
+function tile(key, compact) {
+  const p = people[key];
+  return `<div class="tile" data-who="${key}">
+    <div class="avatar" style="background:${p.color}">${p.initial}</div>
+    <div class="name">${p.name}</div>
+    <div class="muted"><svg width="14" height="14" viewBox="0 0 24 24" fill="#e8eaed"><path d="M19 11h-1.7c0 .74-.16 1.43-.43 2.05l1.23 1.23A6.6 6.6 0 0 0 19 11zm-4.02.17V5a3 3 0 0 0-5.98-.29zM4.27 3L3 4.27l6.01 6.01V11a3 3 0 0 0 4.38 2.65l1.66 1.66A5.23 5.23 0 0 1 12 16.1 5.17 5.17 0 0 1 6.7 11H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28a6.92 6.92 0 0 0 2.5-.91L19.73 21 21 19.73z"/></svg></div>
+    <div class="talk"><i></i><i></i><i></i></div>
+  </div>`;
+}
+
+function setup() {
+  $('grid').innerHTML = ['rahul', 'priya', 'daniel', 'you'].map((k) => tile(k)).join('');
+  $('strip').innerHTML = ['rahul', 'daniel', 'you'].map((k) => tile(k, true)).join('');
+  $('slide').innerHTML = SLIDE;
+}
+
+function revealed(text, progress) {
+  const words = text.split(' ');
+  const n = Math.max(1, Math.ceil(words.length * Math.min(1, progress)));
+  return words.slice(0, n).join(' ');
+}
+
+function typed(text, start, t, perSecond = 70) {
+  return text.slice(0, Math.max(0, Math.floor((t - start) * perSecond)));
+}
+
+const SPIN = ['✢', '✳', '✶', '✻', '✽', '✻', '✶', '✳'];
+
+function render(t) {
+  // Meet: who is talking, the layout, and the captions.
+  const speaking = speech.find((s) => t >= s.from && t <= s.to);
+  const presenting = t >= PRESENT_AT;
+  $('grid').style.display = presenting ? 'none' : 'grid';
+  $('presenting').style.display = presenting ? 'block' : 'none';
+  document.querySelectorAll('.tile').forEach((el) => {
+    const on = speaking && el.dataset.who === speaking.who;
+    el.classList.toggle('speaking', !!on);
+    if (on) el.querySelectorAll('.talk i').forEach((bar, i) => {
+      bar.style.height = (5 + 7 * Math.abs(Math.sin(t * 9 + i * 1.7))) + 'px';
+    });
+  });
+  const shown = speech.filter((s) => t >= s.from && t < s.to + 2.2).slice(-2);
+  $('captions').innerHTML = shown.map((s) => {
+    const p = people[s.who];
+    return `<div class="cap"><div class="face" style="background:${p.color}">${p.initial}</div>
+      <div><div class="who">${p.name}</div><div class="said">${esc(revealed(s.text, (t - s.from) / (s.to - s.from)))}</div></div></div>`;
+  }).join('');
+
+  // Claude Code: the feed so far.
+  let html = '';
+  let busy = false;
+  for (const item of feed) {
+    if (t < item.at) continue;
+    if (item.kind === 'user') html += `<div class="user">${item.html}</div>`;
+    if (item.kind === 'say') html += `<div class="say">${esc(item.text)}</div>`;
+    if (item.kind === 'tool') {
+      const done = t >= item.done;
+      busy = busy || !done;
+      html += `<div class="tool ${done ? '' : 'busy'}"><div class="head"><span class="dot"></span><b>sotto</b> · ${item.name}${done ? '' : ' …'}</div>`;
+      if (done && item.result) html += `<div class="result">${esc(item.result)}</div>`;
+      if (done && item.thumb) html += `<div class="thumb"><div class="slide">${SLIDE}</div></div>`;
+      html += `</div>`;
+    }
+    if (item.kind === 'cue') {
+      let start = item.at;
+      const parts = item.lines.map(([kind, label, text]) => {
+        const shownText = typed(text, start, t);
+        const p = shownText ? `<p><b class="${kind}">${label}</b> ${esc(shownText)}${shownText.length < text.length ? '<span class="caret"></span>' : ''}</p>` : '';
+        start += text.length / 70 + 0.25;
+        return p;
+      });
+      html += `<div class="cue">${parts.join('')}</div>`;
+    }
+  }
+  $('feed').innerHTML = html;
+  const feedEl = $('feed');
+  const overflow = feedEl.scrollHeight - feedEl.clientHeight;
+  feedEl.firstElementChild.style.marginTop = overflow > 0 ? (-overflow) + 'px' : '0';
+  $('working').innerHTML = `${SPIN[Math.floor(t * 8) % SPIN.length]} Listening… <span>(esc to interrupt)</span>`;
+}
+
+setup();
+render(Number(new URLSearchParams(location.search).get('t') || 0));
+window.ready = true;
+</script>
+</body>
+</html>

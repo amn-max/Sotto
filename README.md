@@ -4,7 +4,7 @@
 
 > *sotto voce* — in a quiet voice, so only the person beside you hears.
 
-**A silent copilot for your Google Meet calls, inside the AI agent you already use.**
+**A silent copilot for your Google Meet and Microsoft Teams calls, inside the AI agent you already use.**
 
 ![Claude Code](https://img.shields.io/badge/Claude%20Code-plugin-D97757)
 ![Codex](https://img.shields.io/badge/Codex-plugin-10A37F)
@@ -16,22 +16,7 @@ Sotto follows your meeting as it happens: what people say, and whatever they put
 
 ## What you see
 
-Cues appear in your agent's chat while people talk:
-
-```
-— Rahul: "we can go live on the 15th, assuming your side has the webhook ready"
-
-  Ask:   Which webhook — booking-created only, or reschedules and cancels too?
-  Flag:  "Assuming your side" puts the date's risk on you. Get his dependency list in writing.
-
-— Priya starts presenting the pricing deck
-
-  Context: The slide says 38 paise/min; last week's quote in your notes was 34.
-
-— You type: "what did we agree on SLAs last time?"
-
-  Answer: 99.5% monthly uptime, with credits starting below 99%. It's in the vendor-eval doc.
-```
+<img src="assets/demo.gif" width="100%" alt="A Google Meet call on the left, with live captions and a shared pricing slide. On the right, Claude Code shows Sotto's cues as people talk.">
 
 Sotto speaks up only when it has something useful, and stays quiet the rest of the time.
 
@@ -40,13 +25,13 @@ Sotto speaks up only when it has something useful, and stays quiet the rest of t
 - **It knows your work.** Sotto runs inside your AI agent, so mid-meeting it can look through the projects, documents and notes your agent can see.
 - **Nothing joins the call.** There's no bot in the participant list, and nothing is said or posted in the meeting.
 - **It sees the screen.** When someone presents, your agent can read the slide, dashboard or document they're showing.
-- **Free and light.** It uses Google Meet's own captions, so there's no transcription service, no API key and no account to create. It barely uses your computer.
-- **Any caption language.** It works in every language Google Meet can caption.
+- **Free and light.** It uses the meeting's own captions, so there's no transcription service, no API key and no account to create. It barely uses your computer.
+- **Any caption language.** It works in every language Google Meet or Teams can caption.
 
 ## What you need
 
 - One of these AI agents: **Claude Code**, **Codex CLI** or **Antigravity**
-- **Google Chrome** or **Microsoft Edge**, with Google Meet's interface in English
+- **Google Meet** or **Microsoft Teams**, joined in **Google Chrome** or **Microsoft Edge** (not the Teams app), with the meeting's interface in English
 
 ## Install
 
@@ -122,7 +107,7 @@ Then start a new session in your agent.
 
 ## Use it
 
-1. **Join your meeting** in the browser and turn on captions: press `c`, or click the **CC** button. Only you see them.
+1. **Join your meeting** in the browser and turn on captions. In Google Meet, press `c` or click **CC**; in Teams, open **More** and turn on **Captions**. Only you see them.
 2. **Start Sotto** with `/sotto` (`$sotto` in Codex; in the Antigravity IDE, ask the agent to start Sotto), and say what the meeting is about and what you want from it:
 
    ```
@@ -142,10 +127,10 @@ Then start a new session in your agent.
 
 ## Languages
 
-Sotto works in any language Google Meet can caption ([see Google's list](https://support.google.com/meet/answer/15077804)). Meet captions one language at a time, so set it to the language the meeting is in:
+Sotto works in any language your meeting can caption. Captions follow one language at a time, so set them to the language the meeting is in:
 
-1. In the meeting, open **⋮ More options → Settings → Captions**.
-2. Under **Language of the meeting**, choose the language.
+- **Google Meet** ([supported languages](https://support.google.com/meet/answer/15077804)): open **⋮ More options → Settings → Captions**, and choose the language under **Language of the meeting**.
+- **Teams:** open the captions settings and change the **spoken language**.
 
 Your agent writes its cues in the language you write to it in, whatever language the captions are in.
 
@@ -162,8 +147,8 @@ When a new version is out, Sotto tells you in your agent the next time you start
 
 | What you see | What to do |
 |---|---|
-| "Meet tab not connected" | Check that Sotto is switched on in `chrome://extensions`, then refresh the meeting tab. |
-| "Captions are OFF" | Press `c` in the meeting, or click the **CC** button. |
+| "Meeting tab not connected" | Check that Sotto is switched on in `chrome://extensions`, then refresh the meeting tab. |
+| "Captions are OFF" | In Google Meet, press `c` or click **CC**. In Teams, open **More** and turn on **Captions**. |
 | Cues don't match what's being said | Check the caption language (see [Languages](#languages)). |
 | `/sotto` isn't recognised | Start a new session in your agent after installing. |
 | "Port 47823 is held by another program" | Another app is using the port Sotto needs. Close that app, then start Sotto again. |

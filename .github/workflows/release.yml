@@ -40,7 +40,8 @@ jobs:
       - name: Build the Antigravity plugin
         run: |
           mkdir -p build/sotto
-          cp -r .antigravity-plugin mcp_config.json skills mcp-server assets build/sotto/
+          cp -r .antigravity-plugin mcp_config.json skills mcp-server build/sotto/
+          mkdir -p build/sotto/assets && cp assets/icon.png build/sotto/assets/
           cd build && zip -r ../sotto-antigravity-plugin.zip sotto
 
       - name: Publish the release
