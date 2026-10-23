@@ -176,7 +176,6 @@ Your agent writes its cues in the language you write to it in, whatever language
 ## Limits
 
 - **Captions aren't perfect.** Names, numbers, and speech in a language other than the caption language can come through garbled. Your agent reads past a lot of it from context, but it can't hear the audio.
-- **Screen sharing** works when someone else presents; your own shared screen isn't captured.
 
 ---
 

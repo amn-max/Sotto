@@ -17,7 +17,7 @@ flowchart LR
   server -- "MCP tools" --> agent
 ```
 
-- **Browser extension** (`chrome-extension/`) reads Meet's caption list once a second and who is presenting, and posts them to the local server. It compares a 32×18 thumbnail of the largest video every two seconds and encodes a full snapshot only when someone else is presenting and the screen has changed and settled.
+- **Browser extension** (`chrome-extension/`) reads Meet's caption list once a second and who is presenting, and posts them to the local server. It compares a 32×18 thumbnail of the largest video every two seconds. It sends a snapshot on its own when someone else is presenting and the screen has changed and settled, and on request whenever the agent calls `get_screen`, which also covers your own presentation.
 - **MCP server** (`mcp-server/server.py`) is standard-library Python. It speaks MCP over stdio to the agent and runs a loopback HTTP endpoint for the extension. The endpoint opens only after the agent calls `start`; a second session calling `start` takes the meeting over, transcript included. Requests must carry the `X-Sotto` header and no web-page origin.
 - **Skill** (`skills/sotto/SKILL.md`) is the instructions every agent follows: the listening loop, when a cue is worth writing, and how to keep it short.
 
