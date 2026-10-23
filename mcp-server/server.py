@@ -29,7 +29,7 @@ from concurrent.futures import wait as wait_for_futures
 from datetime import datetime
 from pathlib import Path
 
-VERSION = "0.1.0"
+VERSION = "0.1.1"
 PORT = int(os.environ.get("SOTTO_PORT", "47823"))
 SAVE_DIR = Path(os.environ.get("SOTTO_DIR") or Path.home() / "Sotto")
 RELEASES = "https://github.com/amn-max/Sotto/releases/latest"

@@ -2,7 +2,7 @@
   "$schema": "https://antigravity.google/schemas/v1/plugin.json",
   "name": "sotto",
   "displayName": "Sotto",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "A silent copilot for Google Meet. Reads your own Meet captions and shared screen through a local browser extension and gives you private cues in text: what to ask, what to expect, and context from your work.",
   "logo": "assets/icon.png",
   "suggestedPrompts": [
