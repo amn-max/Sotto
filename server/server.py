@@ -2,7 +2,7 @@
 
 One stdlib-only process with two faces:
 
-* an MCP server on stdin/stdout for Claude Code (or any MCP client), and
+* an MCP server on stdin/stdout for an AI agent such as Claude Code, Gemini CLI or Codex, and
 * a loopback HTTP endpoint the Sotto Chrome extension posts the Meet
   tab's captions, status and shared-screen frames to.
 
@@ -201,7 +201,7 @@ class Meeting:
         with self.cond:
             while True:
                 if self.lost:
-                    return ["[status] Another Claude Code session took over this meeting. Stop listening here."]
+                    return ["[status] Another session took over this meeting. Stop listening here."]
                 now = time.time()
                 lines = self._collect(now)
                 if lines:
@@ -256,9 +256,12 @@ class Meeting:
                     state.append(f"{self.presenter} is presenting")
                 lines.append(", ".join(state) + ".")
             else:
+                # An agent's plugin cache is replaced on every update, so don't send the user there.
+                cached = "cache" in (part.lower() for part in EXTENSION_DIR.parts)
+                folder = "the extension folder of their Sotto copy" if cached else str(EXTENSION_DIR)
                 lines.append(
                     "Meet tab not connected. Ask the user to open the meeting in Chrome with the Sotto "
-                    f"extension enabled (one-time setup: chrome://extensions, Developer mode, Load unpacked, {EXTENSION_DIR})."
+                    f"extension enabled (one-time setup: chrome://extensions, Developer mode, Load unpacked, {folder})."
                 )
             lines.append(f"So far: {len(self.turns)} caption turns, {len(self.frames)} screen frames.")
             if self.folder:
@@ -522,7 +525,7 @@ class Endpoint:
         else:
             raise RuntimeError("The other session released the meeting but the port did not free up. Call start again.")
         MEETING.adopt(handed)
-        return "Took the meeting over from another Claude Code session."
+        return "Took the meeting over from another session."
 
     def hand_over(self, _body):
         state = MEETING.export()
@@ -571,7 +574,7 @@ def tool_start(_args):
 
 def tool_wait(args):
     if MEETING.lost:
-        return text_result("Another Claude Code session took over this meeting. Stop listening here.")
+        return text_result("Another session took over this meeting. Stop listening here.")
     if not ENDPOINT.open:
         return text_result("Sotto isn't running in this session. Call start first.", error=True)
     timeout = min(max(int(args.get("timeout_s") or 45), 5), 55)
@@ -612,6 +615,11 @@ def tool_stop(_args):
     return text_result("Stopped listening. Nothing was recorded.")
 
 
+# MCP tool annotations. Agents that auto-approve read-only tools (Codex, for one) can then run the
+# listening loop without asking each time; start and stop only touch Sotto's own local state.
+READS_MEETING = {"readOnlyHint": True, "openWorldHint": False}
+LOCAL_STATE = {"readOnlyHint": False, "destructiveHint": False, "idempotentHint": True, "openWorldHint": False}
+
 TOOLS = [
     {
         "name": "start",
@@ -621,6 +629,7 @@ TOOLS = [
             "presenting. Safe to call again at any time."
         ),
         "inputSchema": {"type": "object", "properties": {}},
+        "annotations": LOCAL_STATE,
     },
     {
         "name": "wait_for_update",
@@ -637,6 +646,7 @@ TOOLS = [
                 "timeout_s": {"type": "integer", "minimum": 5, "maximum": 55, "description": "Seconds to wait (default 45)."},
             },
         },
+        "annotations": READS_MEETING,
     },
     {
         "name": "get_screen",
@@ -645,6 +655,7 @@ TOOLS = [
             "Without one, asks the Meet tab for a fresh snapshot of its largest video and returns it."
         ),
         "inputSchema": {"type": "object", "properties": {"frame": {"type": "integer", "minimum": 1}}},
+        "annotations": READS_MEETING,
     },
     {
         "name": "get_transcript",
@@ -653,11 +664,13 @@ TOOLS = [
             "summary; the listening loop doesn't need it."
         ),
         "inputSchema": {"type": "object", "properties": {"last_minutes": {"type": "number", "minimum": 0}}},
+        "annotations": READS_MEETING,
     },
     {
         "name": "stop",
         "description": "Stop listening and close the local endpoint. Returns where the transcript and frames were saved.",
         "inputSchema": {"type": "object", "properties": {}},
+        "annotations": LOCAL_STATE,
     },
 ]
 

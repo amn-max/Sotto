@@ -1,0 +1,28 @@
+{
+  "name": "sotto",
+  "version": "0.1.0",
+  "description": "A silent copilot for Google Meet. Reads your own Meet captions and shared screen through a local Chrome extension and gives you private cues in text: what to ask, what to expect, and context from your work.",
+  "author": { "name": "Ayush Naik" },
+  "keywords": ["meetings", "google-meet", "captions", "copilot", "mcp"],
+  "skills": "./skills/",
+  "mcpServers": {
+    "meet": {
+      "command": "uv",
+      "args": ["run", "--quiet", "--no-project", "server.py"],
+      "cwd": "./server",
+      "default_tools_approval_mode": "approve"
+    }
+  },
+  "interface": {
+    "displayName": "Sotto",
+    "shortDescription": "A silent copilot for your Google Meet calls.",
+    "longDescription": "Sotto reads your own Google Meet tab (live captions and the shared screen) through a local Chrome extension and gives you short, private cues while the meeting happens: what to ask, what to expect, and context from your work. Nothing joins the call.",
+    "developerName": "Ayush Naik",
+    "category": "Productivity",
+    "capabilities": ["Interactive"],
+    "defaultPrompt": [
+      "Listen to my Google Meet and give me cues",
+      "Help me in this vendor call: push for a pilot"
+    ]
+  }
+}

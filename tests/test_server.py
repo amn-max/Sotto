@@ -1,4 +1,4 @@
-"""End-to-end checks for server/server.py: driven over MCP stdio the way Claude Code drives it, and
+"""End-to-end checks for server/server.py: driven over MCP stdio the way an agent drives it, and
 posted to the way the Chrome extension posts to it."""
 
 import base64
@@ -27,7 +27,7 @@ def free_port():
 
 
 class Session:
-    """One server process, as one Claude Code session sees it."""
+    """One server process, as one agent session sees it."""
 
     def __init__(self, port, save_dir, log_path):
         env = dict(os.environ, SOTTO_PORT=str(port), SOTTO_DIR=str(save_dir))

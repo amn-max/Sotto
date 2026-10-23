@@ -6,7 +6,7 @@
     {
       "name": "sotto",
       "source": "./",
-      "description": "A silent copilot for Google Meet, inside Claude Code."
+      "description": "A silent copilot for Google Meet."
     }
   ]
 }
