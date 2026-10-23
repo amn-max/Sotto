@@ -2,15 +2,14 @@
 
 > *sotto voce* — in a quiet voice, so only the person beside you hears.
 
-**A silent copilot for Google Meet, inside your AI agent: Claude Code, Gemini CLI or Codex.**
+**A silent copilot for your Google Meet calls, inside the AI agent you already use.**
 
 ![Claude Code](https://img.shields.io/badge/Claude%20Code-plugin-D97757)
-![Gemini CLI](https://img.shields.io/badge/Gemini%20CLI-extension-4285F4)
 ![Codex](https://img.shields.io/badge/Codex-plugin-10A37F)
-![Dependencies](https://img.shields.io/badge/dependencies-none-2E7D32)
+![Gemini CLI](https://img.shields.io/badge/Gemini%20CLI-extension-4285F4)
 ![Cost](https://img.shields.io/badge/extra%20cost-none-2E7D32)
 
-Sotto reads your own Meet tab (the live captions and whatever is being presented) and passes it to your agent. While the meeting is still going, the agent sends you short private cues: the question worth asking now, the objection that's coming, the number from your own work that settles the point.
+Sotto follows your meeting as it happens: what people say, and whatever they put on screen. While the conversation is still going, your agent sends you short private cues: the question worth asking now, the objection that's coming, the fact from your own work that settles the point.
 
 Nothing joins the call, and nothing is said or posted into it. The only cost is your agent's subscription.
 
@@ -18,7 +17,7 @@ Nothing joins the call, and nothing is said or posted into it. The only cost is 
 
 ## What you see
 
-The cues appear in your agent's chat while people talk:
+Cues appear in your agent's chat while people talk:
 
 ```
 — Rahul: "we can go live on the 15th, assuming your side has the webhook ready"
@@ -39,109 +38,92 @@ Sotto stays quiet unless a cue would change what you say or do in the next minut
 
 ## Why Sotto
 
-- **It knows your work.** It runs inside the agent you already use, so mid-meeting it can look through your repositories, documents and notes. Typical meeting assistants only know the meeting.
-- **Nothing joins the call.** There's no bot participant and nothing in the chat. It reads your own tab, the way you do.
-- **It sees the screen.** When someone presents, Sotto snapshots the shared screen each time it changes, so your agent can read the slide, the dashboard or the doc.
-- **Free.** It uses Meet's own captions: no transcription service, no API keys, no accounts.
-- **Light.** The extension reads caption text once a second and compares a 32×18 thumbnail of the screen every two seconds. The server is a single standard-library Python file that idles at about zero CPU.
-- **Any caption language.** Sotto works in every language Google Meet can caption. See [Languages](#languages).
+- **It knows your work.** Sotto runs inside your AI agent, so mid-meeting it can look through the projects, documents and notes your agent can see. Typical meeting assistants only know the meeting.
+- **Nothing joins the call.** There's no bot in the participant list and nothing in the chat.
+- **It sees the screen.** When someone presents, your agent can read the slide, dashboard or document they're showing.
+- **Free and light.** It uses Google Meet's own captions, so there's no transcription service, no API key and no account to create. It barely uses your computer.
+- **Any caption language.** It works in every language Google Meet can caption.
 
 ## Works with
 
-| Agent | How Sotto installs | Start it with | Status |
-|---|---|---|---|
-| **Claude Code** | Plugin (`.claude-plugin/`) | `/sotto` | Used in live meetings |
-| **Codex CLI** | Plugin (`.codex-plugin/`) | `$sotto` | Installs and runs Sotto's tools end to end; not yet used in a live meeting |
-| **Gemini CLI** | Extension (`gemini-extension.json`) | `/sotto` | Installs, connects and finds the skill; not yet used in a live meeting |
-| **Any other MCP agent** | MCP server + `skills/sotto/SKILL.md` | depends on the agent | — |
+| Agent | Start Sotto with | |
+|---|---|---|
+| **Claude Code** | `/sotto` | Tested in live meetings |
+| **Codex CLI** | `$sotto` | Supported |
+| **Gemini CLI** | `/sotto` | Supported |
 
-Every agent uses the same server, extension and skill. Only the packaging differs.
+You need **Google Chrome** or **Microsoft Edge** for the meeting, with Google Meet's interface in English.
 
-## How it works
+## Install
 
-```mermaid
-flowchart LR
-  subgraph tab["Your Meet tab (Chrome or Edge)"]
-    captions["Meet's live captions"]
-    screen["Shared screen"]
-  end
-  extension["Sotto extension"]
-  server["Sotto server<br/>127.0.0.1:47823"]
-  agent["Your agent<br/>Claude Code · Gemini CLI · Codex"]
-  you(("You"))
-  captions --> extension
-  screen --> extension
-  extension -- "captions · status · snapshots" --> server
-  server -- "MCP tools" --> agent
-  agent -- "cues" --> you
+Setup takes about five minutes, and you only do it once.
+
+### 1. Install uv
+
+Sotto's background helper runs through [uv](https://docs.astral.sh/uv/), a small free tool that also sets up Python if you don't have it.
+
+**Windows** (PowerShell):
+
+```powershell
+powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
 ```
 
-| Piece | What it does |
-|---|---|
-| **Extension** (`chrome-extension/`) | Reads Meet's caption list and who is presenting, then posts them to the local server. Encodes a full screen snapshot only when someone else is presenting and the screen has changed and settled. |
-| **Server** (`mcp-server/server.py`) | An MCP server for your agent and a loopback endpoint for the extension, in one process with no dependencies. It opens its port only while you're listening. If another session starts listening, that session takes the meeting over, transcript included. |
-| **Skill** (`skills/sotto/SKILL.md`) | Tells the agent how to run the meeting loop, when a cue is worth writing, and how to keep cues short. |
-
-Each speaker turn reaches the agent once the speaker pauses, usually within a couple of seconds. During long monologues, updates come as the speaker goes.
-
-## Setup
-
-**You need:** Google Chrome or Microsoft Edge, one of the agents above, and [uv](https://docs.astral.sh/uv/). uv finds or fetches Python 3.9 or newer; no packages are installed. Meet's interface must be in English, because the extension finds the captions by their labels.
-
-### 1. Get the code
+**macOS or Linux:**
 
 ```bash
-git clone <repo-url> sotto
+curl -LsSf https://astral.sh/uv/install.sh | sh
 ```
 
-### 2. Load the browser extension
+### 2. Add the browser extension
 
-In the browser profile you join meetings from, open `chrome://extensions`, switch on **Developer mode**, click **Load unpacked**, and choose `sotto/chrome-extension`.
+1. **[Download the Sotto extension](https://github.com/amn-max/Sotto/releases/latest/download/sotto-chrome-extension.zip)** (always the newest version).
+2. Unzip it into a folder you'll keep, such as `Documents\Sotto extension`. The browser loads Sotto from that folder, so don't delete it.
+3. Open `chrome://extensions` (or `edge://extensions`), switch on **Developer mode**, click **Load unpacked**, and choose the folder you unzipped.
+
+Do this in the browser profile you join meetings from. Sotto isn't in the Chrome Web Store yet, which is why it installs through developer mode.
 
 ### 3. Add Sotto to your agent
 
 <details open>
 <summary><b>Claude Code</b></summary>
 
+In a terminal:
+
 ```bash
-claude plugin marketplace add ./sotto
+claude plugin marketplace add amn-max/Sotto
 claude plugin install sotto@sotto
 ```
 
-Then open a new Claude Code session; the server loads when a session starts.
-</details>
-
-<details>
-<summary><b>Gemini CLI</b></summary>
-
-```bash
-gemini extensions link ./sotto
-```
-
-`link` uses your clone in place, so a `git pull` updates it. Restart Gemini CLI afterwards. When Gemini first asks to run a Sotto tool, choose to always allow it, so the listening loop isn't interrupted.
+Or inside Claude Code: `/plugin marketplace add amn-max/Sotto`, then `/plugin install sotto@sotto`.
 </details>
 
 <details>
 <summary><b>Codex CLI</b></summary>
 
 ```bash
-codex plugin marketplace add ./sotto
+codex plugin marketplace add amn-max/Sotto
 codex plugin add sotto@sotto
 ```
-
-Start a new Codex session afterwards. Sotto's tools are pre-approved in its plugin config, so the listening loop runs without prompts. Codex installs a copy of the plugin, so after a `git pull`, reinstall with `codex plugin remove sotto@sotto` and `codex plugin add sotto@sotto`.
 </details>
 
 <details>
-<summary><b>Any other MCP agent</b></summary>
+<summary><b>Gemini CLI</b></summary>
 
-Register a stdio MCP server that runs `uv run --quiet --no-project server.py` with `sotto/mcp-server` as its working directory. Then give the agent the instructions in `skills/sotto/SKILL.md`, as a skill if it supports them or as a custom prompt if not.
+```bash
+gemini extensions install https://github.com/amn-max/Sotto
+```
+
+The first time Gemini asks to run a Sotto tool, choose to always allow it, so it can keep listening without stopping to ask.
+
+With a personal Google account, Gemini CLI signs in with a Gemini API key, which is free from [Google AI Studio](https://aistudio.google.com/apikey).
 </details>
 
-## Using Sotto
+Then start a new session in your agent.
 
-1. **Join the meeting** in Chrome and turn captions on (press `c`). Only you see them.
-2. **Start Sotto** in your agent and tell it what the meeting is for:
+## Use it
+
+1. **Join your meeting** in the browser and turn on captions: press `c`, or click the **CC** button. Only you see them.
+2. **Start Sotto** in your agent, and say what the meeting is about and what you want from it:
 
    ```
    /sotto Vendor call on telephony pricing. I want under 40 paise a minute and a 30-day pilot.
@@ -149,15 +131,15 @@ Register a stdio MCP server that runs `uv run --quiet --no-project server.py` wi
 
    In Codex, type `$sotto` instead of `/sotto`.
 
-   The brief is optional. On its own, `/sotto` works out the context from the conversation. A good brief says what you want out of the meeting, who's on the other side, and anything to watch for.
+   The description is optional; with just `/sotto`, it works out the context as the meeting goes. The more you tell it (your goal, who's on the other side, what to watch for), the sharper the cues.
 
-3. **Talk to it any time.** Type into the same session: "what should I ask about SLAs?", "is that number right?", "summarise the last five minutes". It answers, then goes back to listening.
-4. **Finish.** Say "stop", or just leave the call. Sotto writes a wrap-up: decisions, action items with owners, and open questions.
+3. **Ask it anything along the way.** Type into the same chat: "what should I ask about SLAs?", "is that number right?", "summarise the last five minutes". It answers, then goes back to listening.
+4. **Finish.** Say "stop", or just leave the call. Sotto writes a wrap-up of decisions, action items with owners, and open questions.
 
 **Tips**
 
-- Keep the agent on a second screen, next to the meeting.
-- When you present, share a tab or a window rather than your whole screen.
+- Keep your agent on a second screen, or beside the meeting window.
+- When you share your screen, share a tab or a window rather than the whole screen, so your cues stay private.
 - A faster model makes cues arrive sooner.
 
 ## Languages
@@ -167,63 +149,38 @@ Sotto works in any language Google Meet can caption ([see Google's list](https:/
 1. In the meeting, open **⋮ More options → Settings → Captions**.
 2. Under **Language of the meeting**, choose the language.
 
-The agent writes its cues in the language you write to it in, whatever the caption language is.
+Your agent writes its cues in the language you write to it in, whatever language the captions are in.
+
+## Updating
+
+- **Browser extension:** [download the newest zip](https://github.com/amn-max/Sotto/releases/latest/download/sotto-chrome-extension.zip), unzip it over your existing Sotto folder, then click the reload button on Sotto's card in `chrome://extensions`.
+- **Claude Code:** `claude plugin marketplace update sotto`, then `claude plugin update sotto@sotto`.
+- **Codex CLI:** `codex plugin marketplace upgrade`, then `codex plugin add sotto@sotto`.
+- **Gemini CLI:** `gemini extensions update sotto`.
+
+## Troubleshooting
+
+| What you see | What to do |
+|---|---|
+| "Meet tab not connected" | Check that Sotto is switched on in `chrome://extensions`, then refresh the meeting tab. |
+| "Captions are OFF" | Press `c` in the meeting, or click the **CC** button. |
+| Cues don't match what's being said | Check the caption language (see [Languages](#languages)). |
+| `/sotto` isn't recognised | Start a new session in your agent after installing. |
+| "Port 47823 is held by another program" | Another app is using Sotto's port. Close it, or see [CONTRIBUTING.md](CONTRIBUTING.md#settings) to change the port. |
 
 ## Privacy
 
-- **On your computer:** the transcript and screen snapshots, saved to `~/Sotto/meetings/<date>_<meeting-code>/`. Delete them whenever you like.
-- **Sent to your agent's model provider:** the caption text, and any snapshots the agent looks at, go to the company behind your agent (Anthropic, Google or OpenAI) as part of your session, under your existing terms with them.
-- **Sent anywhere else:** nothing. There's no other service and no telemetry, and nothing is posted to the meeting.
-- **Other participants:** they aren't notified. Whether and how to tell them is up to you. Follow your organisation's rules, especially for calls with customers.
-
-The local endpoint only answers requests carrying Sotto's own header, and refuses anything sent by a web page, so other sites you have open can't push data into it.
-
-## Tools
-
-Sotto gives your agent five MCP tools:
-
-| Tool | Purpose |
-|---|---|
-| `start` | Opens the local endpoint and reports what's connected: the Meet tab, captions on or off, who is presenting. Safe to call again as a status check. |
-| `wait_for_update` | The listening loop. Waits up to 55 seconds for new speech, a screen change, or a status change, then returns it. |
-| `get_screen` | Returns a saved snapshot, or asks the tab for a fresh one. |
-| `get_transcript` | Everything said so far, or the last N minutes. |
-| `stop` | Stops listening and returns where the transcript and snapshots were saved. |
-
-## Configuration
-
-| Variable | Default | Meaning |
-|---|---|---|
-| `SOTTO_PORT` | `47823` | Local port. If you change it, change it in `chrome-extension/manifest.json` and `chrome-extension/background.js` too. |
-| `SOTTO_DIR` | `~/Sotto` | Where meetings are saved. |
+- **Stays on your computer:** the meeting transcript and screen snapshots, saved in a `Sotto` folder in your home folder. Delete them whenever you like.
+- **Goes to your agent's provider:** the caption text, and any snapshots your agent looks at, go to the company behind your agent (Anthropic, OpenAI or Google) as part of your normal session with them.
+- **Goes nowhere else:** there's no Sotto server, no account and no tracking, and nothing is ever posted to the meeting.
+- **Other people in the meeting** aren't notified. Whether and how to tell them is up to you. Follow your organisation's rules, especially for calls with customers.
 
 ## Limits
 
-- **Caption accuracy.** Names, numbers, and speech in a language other than the caption language come through garbled. The agent reads past a lot of it from context, but it can't hear the audio.
-- **Screen snapshots** come from the biggest video in the tab while someone else presents. Your own shared screen isn't captured. Seeing snapshots needs an agent that shows images returned by MCP tools.
+- **Captions aren't perfect.** Names, numbers, and speech in a language other than the caption language can come through garbled. Your agent reads past a lot of it from context, but it can't hear the audio.
+- **Screen sharing** works when someone else presents; your own shared screen isn't captured.
 - **Google Meet only,** in Chrome or Edge, with Meet's interface in English.
 
-## Development
+---
 
-```
-chrome-extension/      the browser extension that reads your Meet tab
-mcp-server/server.py   the MCP server and local endpoint, standard library only
-skills/sotto/          the instructions every agent follows
-tests/                 server end-to-end tests and extension logic tests
-
-.claude-plugin/        Claude Code plugin, plus the marketplace Claude Code and Codex install from
-.codex-plugin/         Codex plugin
-gemini-extension.json  Gemini CLI extension
-commands/sotto.toml    the /sotto command for Gemini CLI
-```
-
-The agent packaging sits at the top level because each agent requires it there: Gemini CLI reads its manifest, `skills/` and `commands/` only from the folder it installs, and Claude Code and Codex refuse server paths outside the plugin folder.
-
-```bash
-python -m unittest discover -s tests     # server, driven over MCP stdio and HTTP
-node --test tests/content.test.mjs       # extension caption handling
-claude plugin validate .                 # Claude Code plugin manifest
-gemini extensions validate .             # Gemini CLI extension manifest
-```
-
-After editing the extension, reload it in `chrome://extensions` and refresh the Meet tab. After editing the server or the skill, start a new agent session.
+Building on Sotto or changing it? See [CONTRIBUTING.md](CONTRIBUTING.md).

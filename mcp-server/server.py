@@ -31,7 +31,7 @@ from pathlib import Path
 VERSION = "0.1.0"
 PORT = int(os.environ.get("SOTTO_PORT", "47823"))
 SAVE_DIR = Path(os.environ.get("SOTTO_DIR") or Path.home() / "Sotto")
-EXTENSION_DIR = Path(__file__).resolve().parent.parent / "chrome-extension"
+EXTENSION_DOWNLOAD = "https://github.com/amn-max/Sotto/releases/latest"
 
 QUIET_S = 1.2        # a caption still being spoken is delivered once it stops changing for this long
 MAX_HOLD_S = 10.0    # ...or once it has waited this long, so a monologue still streams in
@@ -256,12 +256,9 @@ class Meeting:
                     state.append(f"{self.presenter} is presenting")
                 lines.append(", ".join(state) + ".")
             else:
-                # An agent's plugin cache is replaced on every update, so don't send the user there.
-                cached = "cache" in (part.lower() for part in EXTENSION_DIR.parts)
-                folder = "the chrome-extension folder of their Sotto copy" if cached else str(EXTENSION_DIR)
                 lines.append(
-                    "Meet tab not connected. Ask the user to open the meeting in Chrome with the Sotto "
-                    f"extension enabled (one-time setup: chrome://extensions, Developer mode, Load unpacked, {folder})."
+                    "Meet tab not connected. Ask the user to open the meeting in Chrome with the Sotto browser "
+                    f"extension enabled. If they haven't installed it, it's at {EXTENSION_DOWNLOAD}."
                 )
             lines.append(f"So far: {len(self.turns)} caption turns, {len(self.frames)} screen frames.")
             if self.folder:

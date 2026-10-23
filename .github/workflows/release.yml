@@ -1,0 +1,38 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check every manifest carries the tag's version
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          for file in chrome-extension/manifest.json .claude-plugin/plugin.json .codex-plugin/plugin.json gemini-extension.json; do
+            found=$(python3 -c "import json,sys; print(json.load(open(sys.argv[1]))['version'])" "$file")
+            if [ "$found" != "$version" ]; then
+              echo "::error file=$file::version is $found, tag is $version"
+              exit 1
+            fi
+          done
+
+      - name: Run tests
+        run: |
+          python3 -m unittest discover -s tests
+          node --test tests/content.test.mjs
+
+      - name: Build the Chrome extension
+        run: cd chrome-extension && zip -r ../sotto-chrome-extension.zip .
+
+      - name: Publish the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$GITHUB_REF_NAME" sotto-chrome-extension.zip --title "Sotto $GITHUB_REF_NAME" --generate-notes
