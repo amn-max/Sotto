@@ -1,0 +1,15 @@
+{
+  "manifest_version": 3,
+  "name": "Sotto",
+  "version": "0.1.0",
+  "description": "Gives Sotto, running on this computer, your own Google Meet captions and shared-screen snapshots.",
+  "host_permissions": ["http://127.0.0.1:47823/*"],
+  "background": { "service_worker": "background.js" },
+  "content_scripts": [
+    {
+      "matches": ["https://meet.google.com/*"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}

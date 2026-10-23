@@ -1,0 +1,12 @@
+{
+  "name": "sotto",
+  "owner": { "name": "Ayush Naik" },
+  "description": "Sotto, a silent copilot for Google Meet.",
+  "plugins": [
+    {
+      "name": "sotto",
+      "source": "./",
+      "description": "A silent copilot for Google Meet, inside Claude Code."
+    }
+  ]
+}
